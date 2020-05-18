@@ -12,11 +12,10 @@ import os
 import time
 import math
 
+
 # Configure the chrome driver settings.
 # Specifically we change the download prefrence to a specific folder in the Lottery directory
-# Configure webDriverwait for the chrome webdriver named driver to wait for the elements for 120 seconds max
-
-
+# Configure webDriverwait for the chrome webdriver named driver to wait for the elements for 120 seconds max.
 def configDriver(folder):
     global driver, wait
     chromeOptions = Options()
@@ -25,6 +24,7 @@ def configDriver(folder):
         {
             # "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\Lottery\\"
             # + folder
+            # Changed this for the creation of the folders temporarily
             "download.default_directory": folder
         },
     )
@@ -242,17 +242,7 @@ def close_driver():
     driver.close()
 
 
-def create_folder(Lottery_dir, retailer_name, date_start):
-    Month = {"01": "JAN", "02": "FEB", "03": "MAR", "04": "APR", "05": "MAY", "06": "JUN",
-             "07": "JUL", "08": "AUG", "09": "SEP", "10": "OCT", "11": "NOV", "12": "DEC"}
-    path = Lottery_dir+"\\"+retailer_name+"\\" + \
-        Month[date_start[:2]]+"-"+date_start[6:]
-    print(path)
-    os.mkdir(path)
-    return path
 # Configure the filepath to the current directory, the Lottery directory and all Files/directories in the Lottery Directory
-
-
 def config_filePath():
     cur = os.getcwd()
     Lottery_dir = cur + "\\" + "Lottery"
@@ -269,13 +259,16 @@ def clean_lottery_folders(filelist, Lottery_dir):
             os.remove(del_file_dir + "\\" + f)
 
 
-# def create_folder(Lottery_dir, retailer_name, date_start){
-#     print(date_start[7:])
-#     {"01":"JAN"}
-#     path = Lottery_dir+"\\"+retailer_name+"\\"+date_start[:2]
-#     os.mkdir(path)
-# }
-# Create a data frame from the excel file to visualize contents and sort by user_name (emails).
+# Creates folders using the start date and puts it in the correct path using the lottery directory created in config_filepath and the retailer name.
+# Folder is in Jan-2019 format
+def create_folder(Lottery_dir, retailer_name, date_start):
+    Month = {"01": "JAN", "02": "FEB", "03": "MAR", "04": "APR", "05": "MAY", "06": "JUN",
+             "07": "JUL", "08": "AUG", "09": "SEP", "10": "OCT", "11": "NOV", "12": "DEC"}
+    path = Lottery_dir+"\\"+retailer_name+"\\" + \
+        Month[date_start[:2]]+"-"+date_start[6:]
+    print(path)
+    os.mkdir(path)
+    return path
 
 
 def get_data(cur):
@@ -336,19 +329,23 @@ def main():
 
     # date_start = "06/01/2019"
     # date_end = "06/31/2019"
-    # for i in range(len(date_start)):
-    #     ds = date_start[i]
-    #     de = date_end[i]
-    #     f = create_folder(path[1], "NB - Springtime", ds)
-    #     auto_download("nareshbc@gmail.com", "T786110.", f,
-    #                   "183316", True, ds, de)
-    f = create_folder(path[1], "NB - Springtime", "02/01/2020")
-    auto_download("nareshbc@gmail.com", "T786110.", f,
-                  "183316", True, "02/01/2020", "02/29/2020")
 
-    f = create_folder(path[1], "NB - Springtime", "11/01/2019")
-    auto_download("nareshbc@gmail.com", "T786110.", f,
-                  "183316", True, "11/01/2019", "11/30/2019")
+# Individual Testing
+    # f = create_folder(path[1], "NB - Springtime", "02/01/2020")
+    # auto_download("example@gmail.com", "********", f,
+    #               "######", True, "02/01/2020", "02/29/2020")
+
+    # f = create_folder(path[1], "NB - Springtime", "11/01/2019")
+    # auto_download("example@gmail.com", "********", f,
+    #               "######", True, "11/01/2019", "11/30/2019")
+
+    # Uses the above lists created of dates from 01/01/2019 to 05/31/20 to create folders and put the downloaded files into the created folder.
+    for i in range(len(date_start)):
+        ds = date_start[i]
+        de = date_end[i]
+        f = create_folder(path[1], "NB - Springtime", ds)
+        auto_download("example@gmail.com", "********", f,
+                      "######", True, ds, de)
 
 
 if __name__ == "__main__":
