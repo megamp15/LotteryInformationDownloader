@@ -23,14 +23,15 @@ def configDriver(folder):
     chromeOptions.add_experimental_option(
         "prefs",
         {
-            "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryInfo_autoDownloader\\Lottery\\"
-            + folder
+            # "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\Lottery\\"
+            # + folder
+            "download.default_directory": folder
         },
     )
     chromeOptions.add_experimental_option("detach", True)
     driver = webdriver.Chrome(
         options=chromeOptions,
-        executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryInfo_autoDownloader\\webDrivers\\chromedriver.exe",
+        executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\webDrivers\\chromedriver.exe",
     )
     driver.implicitly_wait(3)
     wait = WebDriverWait(driver, 120)
@@ -241,7 +242,17 @@ def close_driver():
     driver.close()
 
 
+def create_folder(Lottery_dir, retailer_name, date_start):
+    Month = {"01": "JAN", "02": "FEB", "03": "MAR", "04": "APR", "05": "MAY", "06": "JUN",
+             "07": "JUL", "08": "AUG", "09": "SEP", "10": "OCT", "11": "NOV", "12": "DEC"}
+    path = Lottery_dir+"\\"+retailer_name+"\\" + \
+        Month[date_start[:2]]+"-"+date_start[6:]
+    print(path)
+    os.mkdir(path)
+    return path
 # Configure the filepath to the current directory, the Lottery directory and all Files/directories in the Lottery Directory
+
+
 def config_filePath():
     cur = os.getcwd()
     Lottery_dir = cur + "\\" + "Lottery"
@@ -258,7 +269,15 @@ def clean_lottery_folders(filelist, Lottery_dir):
             os.remove(del_file_dir + "\\" + f)
 
 
+# def create_folder(Lottery_dir, retailer_name, date_start){
+#     print(date_start[7:])
+#     {"01":"JAN"}
+#     path = Lottery_dir+"\\"+retailer_name+"\\"+date_start[:2]
+#     os.mkdir(path)
+# }
 # Create a data frame from the excel file to visualize contents and sort by user_name (emails).
+
+
 def get_data(cur):
     df = pd.read_excel(cur + "\\hidden.xlsx")
     df.sort_values(by=["USERNAME"], inplace=True)
@@ -267,9 +286,9 @@ def get_data(cur):
 
 
 # Main function that initates the webdriver, login, select options, and download all csv files.
-def auto_download(user_name, password, folder, retailer_num, close_window):
-    date_start = "04/01/2020"
-    date_end = "05/02/2020"
+def auto_download(user_name, password, folder, retailer_num, close_window, date_start, date_end):
+    # date_start = "04/01/2020"
+    # date_end = "05/02/2020"
     configDriver(folder)
     login(user_name, password)
     config_selects(retailer_num, date_start, date_end)
@@ -281,18 +300,18 @@ def auto_download(user_name, password, folder, retailer_num, close_window):
 
 
 # The loop that goes through the data frame and uses the data to call the auto_download function to download the csv files for the clients.
-def loop(df):
-    # Hard coded range for now.
-    for i in range(22):
-        user_name = df["USERNAME"][i].strip()
-        password = df["PASSWORD"][i].strip()
-        retailer_num = str(df["RETAILER NUMBER"][i]).strip()
-        folder = df["COMPANY"][i].strip()
-        try:
-            auto_download(user_name, password, folder, retailer_num, True)
-        except:
-            print("ERROR in:", df["COMPANY"][i])
-            pass
+# def loop(df):
+#     # Hard coded range for now.
+#     for i in range(len(df["USERNAME"])):
+#         user_name = df["USERNAME"][i].strip()
+#         password = df["PASSWORD"][i].strip()
+#         retailer_num = str(df["RETAILER NUMBER"][i]).strip()
+#         folder = df["COMPANY"][i].strip()
+#         try:
+#             auto_download(user_name, password, folder, retailer_num, True)
+#         except:
+#             print("ERROR in:", df["COMPANY"][i])
+#             pass
 
 
 # main function that calls all above functions. We configure the file path and call clean_lottery if we want to.
@@ -301,9 +320,35 @@ def main():
     del_lottery = False
     path = config_filePath()
     if del_lottery:
-        clean_lottery_folders(path[2], path[1])
+        # clean_lottery_folders(path[2], path[1])
+        pass
     data = get_data(path[0])
-    loop(data)
+    # loop(data)
+    date = [str(i).zfill(2) for i in range(1, 13)]
+    date_start_1 = [i+"/01/2019" for i in date]
+    date_2 = [str(i).zfill(2) for i in range(1, 6)]
+    date_start_2 = [i+"/01/2020" for i in date_2]
+    date_start = date_start_1+date_start_2
+    print(date_start)
+    date_end = ['01/31/2019', '02/28/2019', '03/31/2019', '04/30/2019', '05/31/2019', '06/30/2019', '07/31/2019', '08/31/2019',
+                '09/30/2019', '10/31/2019', '11/30/2019', '12/31/2019', '01/31/2020', '02/29/2020', '03/31/2020', '04/30/2020', '05/31/2020']
+    print(date_end)
+
+    # date_start = "06/01/2019"
+    # date_end = "06/31/2019"
+    # for i in range(len(date_start)):
+    #     ds = date_start[i]
+    #     de = date_end[i]
+    #     f = create_folder(path[1], "NB - Springtime", ds)
+    #     auto_download("nareshbc@gmail.com", "T786110.", f,
+    #                   "183316", True, ds, de)
+    f = create_folder(path[1], "NB - Springtime", "02/01/2020")
+    auto_download("nareshbc@gmail.com", "T786110.", f,
+                  "183316", True, "02/01/2020", "02/29/2020")
+
+    f = create_folder(path[1], "NB - Springtime", "11/01/2019")
+    auto_download("nareshbc@gmail.com", "T786110.", f,
+                  "183316", True, "11/01/2019", "11/30/2019")
 
 
 if __name__ == "__main__":

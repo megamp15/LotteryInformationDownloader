@@ -23,14 +23,14 @@ def configDriver(folder):
     chromeOptions.add_experimental_option(
         "prefs",
         {
-            "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryInfo_autoDownloader\\Lottery\\"
+            "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\Lottery\\"
             + folder
         },
     )
     chromeOptions.add_experimental_option("detach", True)
     driver = webdriver.Chrome(
         options=chromeOptions,
-        executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryInfo_autoDownloader\\webDrivers\\chromedriver.exe",
+        executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\webDrivers\\chromedriver.exe",
     )
     driver.implicitly_wait(3)
     wait = WebDriverWait(driver, 120)
@@ -283,7 +283,7 @@ def auto_download(user_name, password, folder, retailer_num, close_window):
 # The loop that goes through the data frame and uses the data to call the auto_download function to download the csv files for the clients.
 def loop(df):
     # Hard coded range for now.
-    for i in range(22):
+    for i in range(len(df["USERNAME"])):
         user_name = df["USERNAME"][i].strip()
         password = df["PASSWORD"][i].strip()
         retailer_num = str(df["RETAILER NUMBER"][i]).strip()
@@ -298,7 +298,7 @@ def loop(df):
 # main function that calls all above functions. We configure the file path and call clean_lottery if we want to.
 # We get the excel file and make a data frame and pass that to loop to continue with the rest of the download functions.
 def main():
-    del_lottery = False
+    del_lottery = True
     path = config_filePath()
     if del_lottery:
         clean_lottery_folders(path[2], path[1])
