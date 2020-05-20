@@ -23,14 +23,14 @@ def configDriver(folder):
     chromeOptions.add_experimental_option(
         "prefs",
         {
-            "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryInfo_autoDownloader\\Lottery\\"
+            "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\Lottery\\"
             + folder
         },
     )
     chromeOptions.add_experimental_option("detach", True)
     driver = webdriver.Chrome(
         options=chromeOptions,
-        executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryInfo_autoDownloader\\webDrivers\\chromedriver.exe",
+        executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\webDrivers\\chromedriver.exe",
     )
     driver.implicitly_wait(3)
     wait = WebDriverWait(driver, 120)
