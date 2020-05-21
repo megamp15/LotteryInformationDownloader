@@ -170,7 +170,7 @@ def main():
 
     root = Tk()
     root.title('Lottery Information Downloader')
-    DownloaderGUI(root)
+    GUI=DownloaderGUI(root)
     root.mainloop()
 
 

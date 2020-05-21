@@ -99,33 +99,38 @@
 
 
 # root.mainloop()
-from dateutil.relativedelta import relativedelta, FR
-from datetime import date, timedelta
-# d = date.today()
-# td = timedelta(days=d.day-1)
-# first_day = d-td
+# from dateutil.relativedelta import relativedelta, FR
+# from datetime import date, timedelta
+# # d = date.today()
+# # td = timedelta(days=d.day-1)
+# # first_day = d-td
 
-# td2 = timedelta(days=31-d.day)
-# last_day = d+td2
-# while ((last_day).month != d.month):
-#     last_day -= timedelta(days=1)
+# # td2 = timedelta(days=31-d.day)
+# # last_day = d+td2
+# # while ((last_day).month != d.month):
+# #     last_day -= timedelta(days=1)
 
-# # print(first_day)
-# # print(last_day)
+# # # print(first_day)
+# # # print(last_day)
 
-d = date.today()-relativedelta(months=1)
-# d = date(2020, 12, 13)-relativedelta(months=1)
+# d = date.today()-relativedelta(months=1)
+# # d = date(2020, 12, 13)-relativedelta(months=1)
 
-first_day = d-relativedelta(days=d.day-1)
-print(first_day)
-print("{0}/{1}/{2}".format(str(first_day.month).zfill(2), str(first_day.day).zfill(2), first_day.year))
+# first_day = d-relativedelta(days=d.day-1)
+# print(first_day)
+# print("{0}/{1}/{2}".format(str(first_day.month).zfill(2), str(first_day.day).zfill(2), first_day.year))
 
-temp_d= d+relativedelta(day=31, weekday=FR(-1))+relativedelta(weeks=1, days=1)
-if temp_d.day != 7:
-    last_day = d+relativedelta(day=31, weekday=FR(-1)) + \
-        relativedelta(weeks=1, days=1)
-else:
-    last_day = d+relativedelta(day=31, weekday=FR(-1))+ \
-        relativedelta(days=1)
-print(last_day)
-print("{0}/{1}/{2}".format(str(last_day.month).zfill(2), str(last_day.day).zfill(2), last_day.year))
+# temp_d= d+relativedelta(day=31, weekday=FR(-1))+relativedelta(weeks=1, days=1)
+# if temp_d.day != 7:
+#     last_day = d+relativedelta(day=31, weekday=FR(-1)) + \
+#         relativedelta(weeks=1, days=1)
+# else:
+#     last_day = d+relativedelta(day=31, weekday=FR(-1))+ \
+#         relativedelta(days=1)
+# print(last_day)
+# print("{0}/{1}/{2}".format(str(last_day.month).zfill(2), str(last_day.day).zfill(2), last_day.year))
+
+from fake_useragent import UserAgent
+ua = UserAgent()
+userAgent = ua.random
+print(userAgent)

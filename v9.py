@@ -17,14 +17,14 @@ import math
 # Configure webDriverwait for the chrome webdriver named driver to wait for the elements for 120 seconds max
 
 
-def configDriver(folder):
+def configDriver(Lottery_dir, folder):
+    print(Lottery_dir+"\\"+folder)
     global driver, wait
     chromeOptions = Options()
     chromeOptions.add_experimental_option(
         "prefs",
         {
-            "download.default_directory": "C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\Lottery\\"
-            + folder
+            "download.default_directory": Lottery_dir+"\\"+folder
         },
     )
     chromeOptions.add_experimental_option("detach", True)
@@ -245,11 +245,21 @@ def close_driver():
 def config_filePath():
     cur = os.getcwd()
     Lottery_dir = cur + "\\" + "Lottery"
+    # print(Lottery_dir)
     filelist = os.listdir(Lottery_dir)
     return cur, Lottery_dir, filelist
 
 
+def create_folder(Lottery_dir, df):
+    df_usernames = df['COMPANY']
+    dir_list = os.listdir(dir)
+    for i in df_usernames:
+        if i.strip() not in dir_list:
+            os.mkdir(dir+"/"+i.strip())
+
 # Delete all files in each directory in lottery
+
+
 def clean_lottery_folders(filelist, Lottery_dir):
     for x in filelist:
         del_file_dir = Lottery_dir + "\\" + x
@@ -267,21 +277,20 @@ def get_data(cur):
 
 
 # Main function that initates the webdriver, login, select options, and download all csv files.
-def auto_download(user_name, password, folder, retailer_num, close_window):
-    date_start = "04/01/2020"
-    date_end = "05/02/2020"
-    configDriver(folder)
-    login(user_name, password)
-    config_selects(retailer_num, date_start, date_end)
-    pack_inventory(date_start)
-    packs_Activated()
-    statement_sum(date_start)
+def auto_download(user_name, password, date_start, date_end, folder, retailer_num, close_window, Lottery_dir):
+
+    configDriver(Lottery_dir, folder)
+    # login(user_name, password)
+    # config_selects(retailer_num, date_start, date_end)
+    # pack_inventory(date_start)
+    # packs_Activated()
+    # statement_sum(date_start)
     if close_window:
         close_driver()
 
 
 # The loop that goes through the data frame and uses the data to call the auto_download function to download the csv files for the clients.
-def loop(df):
+def loop(df, Lottery_dir, date_start, date_end):
     # Hard coded range for now.
     for i in range(len(df["USERNAME"])):
         user_name = df["USERNAME"][i].strip()
@@ -289,7 +298,8 @@ def loop(df):
         retailer_num = str(df["RETAILER NUMBER"][i]).strip()
         folder = df["COMPANY"][i].strip()
         try:
-            auto_download(user_name, password, folder, retailer_num, True)
+            auto_download(user_name, password, date_start, date_end, folder,
+                          retailer_num, True, Lottery_dir)
         except:
             print("ERROR in:", df["COMPANY"][i])
             pass
@@ -298,12 +308,14 @@ def loop(df):
 # main function that calls all above functions. We configure the file path and call clean_lottery if we want to.
 # We get the excel file and make a data frame and pass that to loop to continue with the rest of the download functions.
 def main():
+    date_start = "04/01/2020"
+    date_end = "05/02/2020"
     del_lottery = True
     path = config_filePath()
     if del_lottery:
         clean_lottery_folders(path[2], path[1])
-    data = get_data(path[0])
-    loop(data)
+    # data = get_data(path[0])
+    # loop(data, path[1], date_start, date_end)
 
 
 if __name__ == "__main__":
