@@ -598,6 +598,8 @@ class DownloaderGUI:
                                            message="Please type a correct date in the format day/month/year - 00/00/0000")
                     break
 
+# Main Loop
+
 
 def main():
     root = Tk()

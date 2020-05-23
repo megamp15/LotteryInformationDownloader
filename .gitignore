@@ -1,4 +1,5 @@
 Lottery/
 webDrivers/
+dist/
 *.xlsx
 *.log
