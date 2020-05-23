@@ -280,11 +280,11 @@ def get_data(cur):
 def auto_download(user_name, password, date_start, date_end, folder, retailer_num, close_window, Lottery_dir):
 
     configDriver(Lottery_dir, folder)
-    # login(user_name, password)
-    # config_selects(retailer_num, date_start, date_end)
-    # pack_inventory(date_start)
-    # packs_Activated()
-    # statement_sum(date_start)
+    login(user_name, password)
+    config_selects(retailer_num, date_start, date_end)
+    pack_inventory(date_start)
+    packs_Activated()
+    statement_sum(date_start)
     if close_window:
         close_driver()
 
@@ -314,8 +314,8 @@ def main():
     path = config_filePath()
     if del_lottery:
         clean_lottery_folders(path[2], path[1])
-    # data = get_data(path[0])
-    # loop(data, path[1], date_start, date_end)
+    data = get_data(path[0])
+    loop(data, path[1], date_start, date_end)
 
 
 if __name__ == "__main__":

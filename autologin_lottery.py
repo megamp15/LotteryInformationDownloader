@@ -21,11 +21,11 @@ import math
 from threading import Thread
 import sys
 from fake_useragent import UserAgent
+
+
 # Configure the chrome driver settings.
 # Specifically we change the download prefrence to a specific folder in the Lottery directory
 # Configure webDriverwait for the chrome webdriver named driver to wait for the elements for 120 seconds max
-
-
 def configDriver(dir, folder):
     temp = dir+"/"+folder
     path = temp.replace('/', '\\')
@@ -42,6 +42,8 @@ def configDriver(dir, folder):
     )
     chromeOptions.add_experimental_option("detach", True)
     chromeOptions.add_argument(f'--user-agent={userAgent}')
+    chromeOptions.add_experimental_option(
+        'excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(
         options=chromeOptions,
         executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\webDrivers\\chromedriver.exe",
@@ -445,7 +447,11 @@ class DownloaderGUI:
 
         self.button = ttk.Button(
             self.start_frame, text="START", command=lambda: self.getInfo(master), state='disabled')
-        self.button.grid(row=0, padx=(231, 234), pady=10)
+        self.button.grid(row=0, padx=(158, 0), pady=10)
+
+        self.exit_button = ttk.Button(
+            self.start_frame, text="END", command=lambda: self.exit_GUI(master))
+        self.exit_button.grid(row=0, column=1, padx=(60, 160), pady=10)
 
         # The single frame is for the selection of a specific company if the user selects single in the above select frame.
         self.single_frame = ttk.Frame(master, relief=GROOVE)
@@ -525,7 +531,6 @@ class DownloaderGUI:
         x.join()
         messagebox.showinfo(
             title="Lottery Information Downloader", message="Program Completed!")
-        master.destroy()
 
     # Function that asks the user to select an excel file.
     def getFilePath(self):
@@ -598,9 +603,12 @@ class DownloaderGUI:
                                            message="Please type a correct date in the format day/month/year - 00/00/0000")
                     break
 
+    # Exit the GUI and end the program completely
+    def exit_GUI(self, master):
+        master.destroy()
+
+
 # Main Loop
-
-
 def main():
     root = Tk()
     DownloaderGUI(root)
