@@ -130,7 +130,7 @@
 # print(last_day)
 # print("{0}/{1}/{2}".format(str(last_day.month).zfill(2), str(last_day.day).zfill(2), last_day.year))
 
-from fake_useragent import UserAgent
-ua = UserAgent()
-userAgent = ua.random
-print(userAgent)
+# from fake_useragent import UserAgent
+# ua = UserAgent()
+# userAgent = ua.random
+# print(userAgent)
