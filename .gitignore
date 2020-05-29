@@ -2,3 +2,5 @@ Lottery/
 webDrivers/
 *.xlsx
 *.log
+*.exe
+*.stackdump

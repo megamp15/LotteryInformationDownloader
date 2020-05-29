@@ -50,10 +50,12 @@ def configDriver(dir, folder):
     )
     driver.implicitly_wait(3)
     wait = WebDriverWait(driver, 120)
-
+    return True
 
 # Loads the Lottery website and types in the username and clicks the login button
 # A different page is loaded where we type in the password and click the second login button
+
+
 def login(user_name, password):
     # Chrome webDriver opens the lottery website with the link
     driver.get("https://tx-lsp.lotteryservices.com/lsptx/public/lotteryhome")
@@ -297,17 +299,6 @@ def get_retailers(df):
     return tuple([i.strip() for i in df['COMPANY']])
 
 
-# Main function that initates the webdriver, login, select options, and downloads all csv files.
-def auto_download(user_name, password, path, folder, retailer_num, date_start, date_end):
-    configDriver(path, folder)
-    login(user_name, password)
-    config_selects(retailer_num, date_start, date_end)
-    pack_inventory(date_start)
-    packs_Activated()
-    statement_sum(date_start)
-    close_driver()
-
-
 class DownloaderGUI:
     # Creates the GUI interface with Labels, Entry Fields, Comboboxes, and Buttons
     def __init__(self, master):
@@ -334,6 +325,7 @@ class DownloaderGUI:
         self.single_retailer = StringVar(self.main_tab)
         self.delete = IntVar(self.main_tab)
         self.error = False
+
         # The variables are updated everytime the user types in the entry fields or selects an option in the combobox
         self.entry1.trace("w", self.validation)
         self.entry2.trace("w", self.validation)
@@ -507,7 +499,6 @@ class DownloaderGUI:
                     # Enabling/Disabling the start and end buttons once all fields are filled in
                     if second_check:
                         self.button.config(state='normal')
-                        self.end_button.config(state='normal')
                     else:
                         self.button.config(state='disabled')
                         self.end_button.config(state='disabled')
@@ -628,8 +619,8 @@ class DownloaderGUI:
                     retailer_num = str(df["RETAILER NUMBER"][i]).strip()
                     folder = df["COMPANY"][i].strip()
                     try:
-                        auto_download(user_name, password, path, folder,
-                                      retailer_num, date_start, date_end)
+                        self.auto_download(user_name, password, path, folder,
+                                           retailer_num, date_start, date_end)
                         msg = 1
                     except:
                         msg = 0
@@ -645,8 +636,8 @@ class DownloaderGUI:
                         folder = df["COMPANY"][i].strip()
                         try:
 
-                            auto_download(user_name, password, path, folder,
-                                          retailer_num, date_start, date_end)
+                            self.auto_download(user_name, password, path, folder,
+                                               retailer_num, date_start, date_end)
                             msg = 1
                         except:
                             msg = 0
@@ -657,15 +648,16 @@ class DownloaderGUI:
         # If the program is run again without closing the entire interface the error tab is updated if any new errors are found
         if len(self.errors_list):
             self.temp_frame = ttk.Frame(self.error_tab, relief=FLAT)
-            self.temp_frame.grid(row=self.error_count)
-            for i in range(len(self.errors_list)):
-                text = self.errors_list[i]
+            self.temp_frame.grid(row=self.error_count, padx=(175, 0), pady=10)
+            e = list(set(self.errors_list))
+            for i in range(len(e)):
+                text = e[i]
 
                 self.error_text = ttk.Label(self.temp_frame, text=text)
-                self.error_text.grid(row=i)
+                self.error_text.pack()
             self.mainScreenBtn = ttk.Button(self.temp_frame, text="Back to Main Screen",
                                             command=self.main_sel)
-            self.mainScreenBtn.grid(row=len(self.errors_list))
+            self.mainScreenBtn.pack(pady=(10, 0))
             self.error_button.config(state='normal')
 
         # Reenabling the start button once program is done with all or single if we wish to do more downloads
@@ -679,6 +671,18 @@ class DownloaderGUI:
         else:
             messagebox.showwarning(
                 title="Lottery Information Downloader", message="An ERROR OCCURED!")
+            self.end_button.config(state='disabled')
+
+    # Main function that initates the webdriver, login, select options, and downloads all csv files.
+    def auto_download(self, user_name, password, path, folder, retailer_num, date_start, date_end):
+        configDriver(path, folder)
+        self.end_button.config(state='normal')
+        login(user_name, password)
+        config_selects(retailer_num, date_start, date_end)
+        pack_inventory(date_start)
+        packs_Activated()
+        statement_sum(date_start)
+        close_driver()
 
     # Exits the web driver if we are in the middle of downloading and exits the GUI depending on the conditions.
     def exit_GUI(self, master, end=0):
