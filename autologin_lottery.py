@@ -321,6 +321,7 @@ class DownloaderGUI:
         self.style.configure('TButton', font=('Arial', 10))
         self.style.layout('TNotebook.Tab', [])
 
+        # Created a invisible notebook to hold hidden frames in the background
         self.tabs = ttk.Notebook(master)
         self.main_tab = ttk.Frame(self.tabs)
 
@@ -414,7 +415,7 @@ class DownloaderGUI:
                               padx=(0, 43), pady=10)
 
         # The start frame for the start button which iniates the backend silenium to get the data from the website
-        # And exit button to end the program at anytime.
+        # And end button to end the downloader at anytime.
         self.start_frame = ttk.Frame(self.main_tab, relief=FLAT)
         self.start_frame.grid(row=3)
 
@@ -422,11 +423,12 @@ class DownloaderGUI:
             self.start_frame, text="START", command=lambda: self.getInfo(master), state='disabled')
         self.button.grid(row=0, padx=(158, 0), pady=10)
 
-        self._exit = 0
+        self._exit = 0  # Used for closing the webdriver
         self.end_button = ttk.Button(
             self.start_frame, text="END", command=lambda: self.exit_GUI(master), state='disabled')
         self.end_button.grid(row=0, column=1, padx=(60, 160), pady=10)
 
+        # The exit frame for the help, error, and exit button.
         self.exit_frame = ttk.Frame(self.main_tab, relief=FLAT)
         self.exit_frame.grid(row=4)
 
@@ -446,14 +448,17 @@ class DownloaderGUI:
         self.single_frame = ttk.Frame(self.main_tab, relief=FLAT)
         self.single_frame.grid(row=5)
 
+        # shows the errors of the program for a given retailer if there are any.
         self.errors_list = []
         self.error_tab = ttk.Frame(self.tabs)
 
+        # The main_tab is the first frame in the invisble notebook.
         self.tabs.add(self.main_tab)
+        # The erros tab is the second frame in the invisible notebook
         self.tabs.add(self.error_tab)
         self.tabs.grid(row=0)
-    # Used in conjuction with the trace variables to do certain actions if a certain variable(s) are updated
 
+    # Used in conjuction with the trace variables to do certain actions if a certain variable(s) are updated
     def validation(self, *args):
         # Checks if certain entry fields are not empty
         entry1 = self.entry1.get() != ""
@@ -468,6 +473,7 @@ class DownloaderGUI:
         first_check = entry1 and entry2 and entry3 and entry4 and sel
         second_check = first_check and single_retailer
 
+        # Checks if the length of the entries is 10 characters which is the length of the date format
         if len(self.entry3.get()) == 10:
             self.check_dates(self.entry3.get())
         if len(self.entry4.get()) == 10:
@@ -482,8 +488,10 @@ class DownloaderGUI:
                 self.error = True
             else:
                 if first_check:
+                    # Removes the start and exit frames
                     self.start_frame.grid_forget()
                     self.exit_frame.grid_forget()
+                    # Inserts the single frame with the combobox for choosing a single retailer
                     self.single_frame.grid(row=5)
                     ttk.Label(self.single_frame, text="Select Retailer: ").grid(
                         row=0, sticky="E", padx=(153, 0), pady=10)
@@ -493,8 +501,10 @@ class DownloaderGUI:
                                         padx=(0, 159), pady=10)
                     self.combobox2.config(values=get_retailers(
                         self.data), state="readonly")
+                    # Insert the start and exit frame after the single frame
                     self.start_frame.grid(row=6)
                     self.exit_frame.grid(row=7)
+                    # Enabling/Disabling the start and end buttons once all fields are filled in
                     if second_check:
                         self.button.config(state='normal')
                         self.end_button.config(state='normal')
@@ -529,8 +539,8 @@ class DownloaderGUI:
                              self.single_retailer.get())
             x = Thread(target=self.loop, args=(self.dirname, self.data,
                                                self.entry3.get(), self.entry4.get(), master, self.single_retailer.get(),))
-        x.start()
-        self._exit = 1
+        x.start()  # Start the thread
+        self._exit = 1  # Used for ending the webdriver at anytime
 
     # Function that asks the user to select an excel file.
     def getFilePath(self):
@@ -639,9 +649,12 @@ class DownloaderGUI:
                                           retailer_num, date_start, date_end)
                             msg = 1
                         except:
+                            msg = 0
                             self.errors_list.append(
                                 "ERROR in: "+str(df["COMPANY"][i]))
 
+        # Creates the fields inside the error tab if there are any errors and enables the error button to be clickable
+        # If the program is run again without closing the entire interface the error tab is updated if any new errors are found
         if len(self.errors_list):
             self.temp_frame = ttk.Frame(self.error_tab, relief=FLAT)
             self.temp_frame.grid(row=self.error_count)
@@ -655,20 +668,29 @@ class DownloaderGUI:
             self.mainScreenBtn.grid(row=len(self.errors_list))
             self.error_button.config(state='normal')
 
+        # Reenabling the start button once program is done with all or single if we wish to do more downloads
         self.button.config(state='normal')
-        self._exit = 0
+        self._exit = 0  # used for ending the webdriver at anytime
+
+        # Shows the completion or error message
         if msg:
             messagebox.showinfo(
-                title="Lottery Information Downloader", message="Program Completed!")
+                title="Lottery Information Downloader", message="Program Completed Successfully!")
+        else:
+            messagebox.showwarning(
+                title="Lottery Information Downloader", message="An ERROR OCCURED!")
 
-    # Exits the web driver if we are in the middle of downloading and exits the GUI.s
+    # Exits the web driver if we are in the middle of downloading and exits the GUI depending on the conditions.
     def exit_GUI(self, master, end=0):
         if end:
             master.destroy()
         if self._exit:
             driver.close()
-            self.end_loop = 0  # End the for loops in the self.loop function
+            # End the for loops in the self.loop function to end the auto downloader for all or single
+            self.end_loop = 0
 
+    # Select the main tab in the notebook window
+    # Delete the selected frame in the notebook - Used with the help tab in the notebook due to its different size
     def main_sel(self, hid=0):
         if hid:
             for item in self.tabs.winfo_children():
@@ -677,9 +699,12 @@ class DownloaderGUI:
                     break
         self.tabs.select(0)
 
+    # Select error tab
     def error_sel(self):
         self.tabs.select(1)
 
+    # Creates the help tab and adds it as the third notebook tab
+    # Then selects the help tab.
     def help_sel(self):
         self.help_tab = ttk.Frame(self.tabs, relief=FLAT)
         self.tabs.add(self.help_tab)
