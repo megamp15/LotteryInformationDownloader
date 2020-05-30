@@ -1,4 +1,4 @@
-# retailLotteryDownloader
+# LotteryInformationDownloader
 Automating the retrieval of lottery information for retail store clients from https://tx-lsp.lotteryservices.com/lsptx/public/lotteryhome using Selenium and Python
 
 This automated script retrieves pack inventory, packs activated, and statement summaries for a given amount of time from the Texas Retailer Lottery Website. 
@@ -16,11 +16,17 @@ complete. Click the Exit button to end the entire program.
 
 
 Information on each Button:
+
     - Start Button = Start the Automatic Downloader. 
                      Clickable once all the appropriate fields are filled in.
+                     
     - End Button   = End the Automatic Downloader at anytime without closing the interface. 
                      Can view errors if there are any.
+                     
     - Help Button  = Recieve Information about the Program. 
-    - Error Button = Clickable when there is an error. Otherwise no error was found. 
+    
+    - Error Button = Clickable when there is an error. Otherwise no error was found.
+    
     - Exit Button  = Exit the downloader and interface. 
                      Cannot view errors if there are any.
+                     
