@@ -46,7 +46,7 @@ def configDriver(dir, folder):
         'excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(
         options=chromeOptions,
-        executable_path="C:\\Users\\Mahir\\Desktop\\CS_PROJECTS\\retailLotteryDownloader\\webDrivers\\chromedriver.exe",
+        executable_path=".\\webDrivers\\chromedriver.exe",
     )
     driver.implicitly_wait(3)
     wait = WebDriverWait(driver, 120)
@@ -721,25 +721,24 @@ class DownloaderGUI:
         text['yscrollcommand'] = self.scroll.set
         text.insert('1.0',
 
-                    """This automated script retrieves pack inventory, packs activated, and statement summaries \nfor a given amount of time from the Texas Retailer Lottery Website. 
-        \nHow to use the Lottery Information Downloader:
+                    """How to use the Lottery Information Downloader:
         \n1. Select the excel file with all the client(s) information.
-        \n    Look at the dummy excel file for more information on how to setup the excel file.
+        \n    Look at the 'SAMPLE.xlsx' excel file for more information on how to setup the excel file.
         \n2. Select the download folder where you would like the lottery files.
-        \n    A folder with the retailer name is created in the directory chosen with the downloaded \n    lottery files inside.
+        \n    Note: A folder with the retailer name is created in the directory chosen with the downloaded \n    lottery files inside.
         \n3. Enter Start and End date in the month/day/year or 00/00/0000 format.
         \n    Note: If you click the entry fields for the dates the placeholder dates will be removed.
-        \n4. Click the Start Button to begin the automatic download. 
-        \n5. Once completed a pop up message will appear that will inform you that the program is   
+        \n4. Click the Start Button to begin the automatic download.
+        \n5. Once completed a pop up message will appear that will inform you that the program is
         \n    complete. Click the Exit button to end the entire program.
         \n\nInformation on each Button:
-        \n - Start Button  = Start the Automatic Downloader. 
+        \n - Start Button  = Start the Automatic Downloader.
         \n                         Clickable once all the appropriate fields are filled in.
-        \n - End Button   = End the Automatic Downloader at anytime without closing the interface. 
+        \n - End Button   = End the Automatic Downloader at anytime without closing the interface.
         \n                         Can view errors if there are any.
-        \n - Help Button  = Recieve Information about the Program. 
-        \n - Error Button = Clickable when there is an error. Otherwise no error was found. 
-        \n - Exit Button   = Exit the downloader and interface. 
+        \n - Help Button  = Recieve Information about the Program from the GUI interface.
+        \n - Error Button = Clickable when there is an error. Otherwise no error was found.
+        \n - Exit Button   = Exit the downloader and interface.
         \n                        Cannot view errors if there are any.
         """)
         text.config(state="disable")
