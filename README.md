@@ -25,3 +25,7 @@ Information on each Button:
     - Help Button  = Recieve Information about the Program from the GUI interface. 
     
     - Error Button = Clickable when there is an error. Otherwise no error was found.
+    
+    - Exit Button  = Exit the downloader and interface. 
+                     Cannot view errors if there are any.
+                     
