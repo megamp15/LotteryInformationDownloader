@@ -1,5 +1,5 @@
-# retailLotteryDownloader
-### Information on the lottery Auto Downloader:
+# Lottery Information Downloader
+### Information on the lottery Information Downloader:
 
 This script automates the retrieval of lottery data from the [Texas Retailer Lottery Website](https://tx-lsp.lotteryservices.com/lsptx/public/lotteryhome) using Selenium and Python.
 
