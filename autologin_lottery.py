@@ -17,6 +17,10 @@ import pandas as pd
 import os
 import time
 import math
+from win32com.client import Dispatch
+from io import BytesIO
+from urllib.request import urlopen
+from zipfile import ZipFile
 # import threading
 from threading import Thread
 import sys
@@ -33,7 +37,6 @@ def configDriver(dir, folder):
     chromeOptions = Options()
     ua = UserAgent()
     userAgent = ua.random
-
     chromeOptions.add_experimental_option(
         "prefs",
         {
@@ -44,18 +47,24 @@ def configDriver(dir, folder):
     chromeOptions.add_argument(f'--user-agent={userAgent}')
     chromeOptions.add_experimental_option(
         'excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(
-        options=chromeOptions,
-        executable_path=".\\webDrivers\\chromedriver.exe",
-    )
+    try:
+        driver = webdriver.Chrome(
+            options=chromeOptions,
+            executable_path=".\\webDrivers\\chromedriver.exe",
+        )
+    except:
+        update_WebDriver()
+        driver = webdriver.Chrome(
+            options=chromeOptions,
+            executable_path=".\\webDrivers\\chromedriver.exe",
+        )
     driver.implicitly_wait(3)
     wait = WebDriverWait(driver, 120)
     return True
 
+
 # Loads the Lottery website and types in the username and clicks the login button
 # A different page is loaded where we type in the password and click the second login button
-
-
 def login(user_name, password):
     # Chrome webDriver opens the lottery website with the link
     driver.get("https://tx-lsp.lotteryservices.com/lsptx/public/lotteryhome")
@@ -297,6 +306,38 @@ def get_data(p):
 
 def get_retailers(df):
     return tuple([i.strip() for i in df['COMPANY']])
+
+
+# Gets the version of the chrome webdriver currently used on the machine
+def get_version_webdriver(filepath):
+    parser=Dispatch("Scripting.FileSystemObject")
+    try:
+        return parser.GetFileVersion(filepath)
+    except Exception:
+        return None
+
+
+# Update the webDriver
+def update_WebDriver():
+    # The two locations that google chrome is downloaded to on computers
+    paths = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+             r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
+
+    # Version returned from the webdriver currently in use
+    version=list(filter(None, [get_version_webdriver(path) for path in paths]))[0]
+
+    # Download the windows version 
+    zipurl = 'https://chromedriver.storage.googleapis.com/'+str(version)+'/chromedriver_win32.zip'
+    
+    # Extract the zipfile directly to the webDrivers folderr
+    with urlopen(zipurl) as zipresp:
+        with ZipFile(BytesIO(zipresp.read())) as zfile:
+            try:
+                os.remove(os.path.join('webDrivers', 'chromedriver.exe'))
+            except:
+                # There is no webdriver to delete
+                pass
+            zfile.extractall(os.path.join('webDrivers'))
 
 
 class DownloaderGUI:
