@@ -1,7 +1,7 @@
 # Lottery Information Downloader
 This script automates the retrieval of lottery data from the [Texas Retailer Lottery Website](https://tx-lsp.lotteryservices.com/lsptx/public/lotteryhome) using Selenium and Python.
 
-The GUI interface is developed using Tkinter to keep the program compact and distributable.
+The GUI interface is developed using Tkinter to create a compact distributable program.
 ![](GUI.JPG)
 
 Instructions to use the GUI Interface:
@@ -35,4 +35,3 @@ Instructions to use the GUI Interface:
     		- Error Button = Clickable when there is an error. Otherwise no error was found.
     
     		- Exit Button  = Exit the downloader and interface. 
-                     		 Cannot view errors if there are any.
