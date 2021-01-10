@@ -780,7 +780,6 @@ class DownloaderGUI:
         \n - Help Button  = Recieve Information about the Program from the GUI interface.
         \n - Error Button = Clickable when there is an error. Otherwise no error was found.
         \n - Exit Button   = Exit the downloader and interface.
-        \n                        Cannot view errors if there are any.
         """)
         text.config(state="disable")
         ttk.Button(self.help_tab, text="Back to Main Screen",
