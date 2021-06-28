@@ -327,7 +327,7 @@ def get_version():
 
 # Update the webDriver
 def update_WebDriver():
-    get_version()
+    version=get_version()
 
     # Download the windows version 
     zipurl = 'https://chromedriver.storage.googleapis.com/'+str(version)+'/chromedriver_win32.zip'
