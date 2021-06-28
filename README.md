@@ -35,3 +35,6 @@ Instructions to use the GUI Interface:
     		- Error Button = Clickable when there is an error. Otherwise no error was found.
     
     		- Exit Button  = Exit the downloader and interface. 
+
+		- Version Button = Webdriver version to download from https://chromedriver.chromium.org/downloads/ 
+        			   Get the closest version to the one shown in the message box.
