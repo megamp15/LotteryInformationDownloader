@@ -176,7 +176,7 @@ def pack_inventory(date_start):
         )
         # Get the indices of all dates that are in the date_start month and not in the date_end month. EX) date_start = 04/01/2020 then indices will have all dates that are in 04 April.
         # The order of the dates is backwards due to how it is displayed on the Lottery Website
-        indices = [i for i, d in enumerate(date) if date_start[:2] in d.text]
+        indices = [i for i, d in enumerate(date) if date_start[:2] in d.text[:2]]
     except:
         print("ERROR: TABLE - DATES - PACK INVENTORY")
         driver.close()
@@ -285,15 +285,15 @@ def delete_files(dir, df, retailer=""):
     if retailer == "":
         df_usernames = df['COMPANY']
         for i in df_usernames:
-            del_file_dir = dir + "\\" + i
+            del_file_dir = dir + "/" + i.strip()
             del_file_list = os.listdir(del_file_dir)
             for f in del_file_list:
-                os.remove(del_file_dir + "\\" + f)
+                os.remove(del_file_dir + "/" + f)
     else:
-        del_file_dir = dir + "\\" + retailer
+        del_file_dir = dir + "/" + retailer
         del_file_list = os.listdir(del_file_dir)
         for f in del_file_list:
-            os.remove(del_file_dir + "\\" + f)
+            os.remove(del_file_dir + "/" + f)
 
 
 # Create a data frame from the excel file to visualize contents and sort by user_name (emails).
@@ -316,15 +316,18 @@ def get_version_webdriver(filepath):
     except Exception:
         return None
 
-
-# Update the webDriver
-def update_WebDriver():
+def get_version():
     # The two locations that google chrome is downloaded to on computers
     paths = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
              r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
 
     # Version returned from the webdriver currently in use
     version=list(filter(None, [get_version_webdriver(path) for path in paths]))[0]
+    return version
+
+# Update the webDriver
+def update_WebDriver():
+    get_version()
 
     # Download the windows version 
     zipurl = 'https://chromedriver.storage.googleapis.com/'+str(version)+'/chromedriver_win32.zip'
@@ -467,15 +470,19 @@ class DownloaderGUI:
 
         self.help_button = ttk.Button(
             self.exit_frame, text="HELP", command=self.help_sel)
-        self.help_button.grid(row=0, padx=(95, 0), pady=10)
+        self.help_button.grid(row=0, padx=(0, 51), pady=10)
 
         self.error_button = ttk.Button(
             self.exit_frame, text="ERROR", command=self.error_sel, state='disabled')
-        self.error_button.grid(row=0, column=1, padx=(50, 50), pady=10)
+        self.error_button.grid(row=0, column=1, padx=(0, 30), pady=10)
 
         self.exit_button = ttk.Button(
             self.exit_frame, text="EXIT", command=lambda: self.exit_GUI(master, 1))
-        self.exit_button.grid(row=0, column=2, padx=(0, 95), pady=10)
+        self.exit_button.grid(row=0, column=2, padx=(30, 0), pady=10)
+
+        self.version_button = ttk.Button(
+            self.exit_frame, text="VERSION", command=self.version_sel)
+        self.version_button.grid(row=0, column=3, padx=(50, 0), pady=10)
 
         # The single frame is for the selection of a specific company if the user selects single in the above select frame.
         self.single_frame = ttk.Frame(self.main_tab, relief=FLAT)
@@ -711,7 +718,7 @@ class DownloaderGUI:
                 title="Lottery Information Downloader", message="Program Completed Successfully!")
         else:
             messagebox.showwarning(
-                title="Lottery Information Downloader", message="An ERROR OCCURED!")
+                title="Lottery Information Downloader", message="An ERROR OCCURED! Please check if you have a webdriver in the webDrivers folder or view the Version button to download the latest chrome webdriver manually.")
             self.end_button.config(state='disabled')
 
     # Main function that initates the webdriver, login, select options, and downloads all csv files.
@@ -753,7 +760,7 @@ class DownloaderGUI:
     def help_sel(self):
         self.help_tab = ttk.Frame(self.tabs, relief=FLAT)
         self.tabs.add(self.help_tab)
-        text = Text(self.help_tab, width=76, height=20, wrap=WORD)
+        text = Text(self.help_tab, width=90, height=20, wrap=WORD)
         text.grid(row=0)
         self.scroll = ttk.Scrollbar(
             self.help_tab, orient=VERTICAL, command=text.yview)
@@ -780,12 +787,17 @@ class DownloaderGUI:
         \n - Help Button  = Recieve Information about the Program from the GUI interface.
         \n - Error Button = Clickable when there is an error. Otherwise no error was found.
         \n - Exit Button   = Exit the downloader and interface.
+        \n - Version Button = Webdriver version to download from https://chromedriver.chromium.org/downloads/ 
+        \n                             Get the closest version to the one shown in the message box.
         """)
         text.config(state="disable")
         ttk.Button(self.help_tab, text="Back to Main Screen",
                    command=lambda: self.main_sel(1)).grid(row=1, column=0)
         self.tabs.select(2)
 
+    def version_sel(self):
+        messagebox.showinfo(
+                title="", message="Webdriver version: "+get_version())
 
 # Main Loop
 def main():
