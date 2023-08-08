@@ -34,34 +34,18 @@ def configDriver(dir, folder):
     temp = dir+"/"+folder
     path = temp.replace('/', '\\')
     global driver, wait
-    chromeOptions = Options()
-    ua = UserAgent()
-    userAgent = ua.random
-    chromeOptions.add_experimental_option(
+    options = Options()
+    options.add_experimental_option(
         "prefs",
         {
             "download.default_directory": path
         },
     )
-    chromeOptions.add_experimental_option("detach", True)
-    chromeOptions.add_argument(f'--user-agent={userAgent}')
-    chromeOptions.add_experimental_option(
-        'excludeSwitches', ['enable-logging'])
-    try:
-        driver = webdriver.Chrome(
-            options=chromeOptions,
-            executable_path=".\\webDrivers\\chromedriver.exe",
-        )
-    except:
-        update_WebDriver()
-        driver = webdriver.Chrome(
-            options=chromeOptions,
-            executable_path=".\\webDrivers\\chromedriver.exe",
-        )
+    options.add_argument('--headless=new')
+    driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(3)
     wait = WebDriverWait(driver, 120)
     return True
-
 
 # Loads the Lottery website and types in the username and clicks the login button
 # A different page is loaded where we type in the password and click the second login button
