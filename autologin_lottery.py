@@ -16,6 +16,7 @@ from getpass import getpass
 import pandas as pd
 import os
 import time
+import datetime
 import math
 from win32com.client import Dispatch
 from io import BytesIO
@@ -597,20 +598,19 @@ class DownloaderGUI:
     # Computes the first day of the last month given today's date for the start date.
     # Computes the last saturday of the final week of the last month given today's date for the end date. If the last week runs into the next month that is fine.
     def placeholder_dates(self):
-        d = date.today()-relativedelta(months=1)
-        first_day = d-relativedelta(days=d.day-1)
-        temp_d = d+relativedelta(day=31, weekday=FR(-1)) + \
-            relativedelta(weeks=1, days=1)
-        if temp_d.day != 7:
-            last_day = d+relativedelta(day=31, weekday=FR(-1)) + \
-                relativedelta(weeks=1, days=1)
-        else:
-            last_day = d+relativedelta(day=31, weekday=FR(-1)) + \
-                relativedelta(days=1)
-        first_day = "{0}/{1}/{2}".format(str(first_day.month).zfill(
-            2), str(first_day.day).zfill(2), first_day.year)
-        last_day = "{0}/{1}/{2}".format(str(last_day.month).zfill(2),
-                                        str(last_day.day).zfill(2), last_day.year)
+        d = date.today()
+
+        start_date = d-relativedelta(months=1)
+        start_date=start_date.replace(day=1)
+
+        dt = datetime.date(d.year, d.month, 1)
+        days_until_saturday = (5 - dt.weekday()) % 7
+        end_date = dt + datetime.timedelta(days=days_until_saturday)
+
+        first_day = "{0}/{1}/{2}".format(str(start_date.month).zfill(
+            2), str(start_date.day).zfill(2), start_date.year)
+        last_day = "{0}/{1}/{2}".format(str(end_date.month).zfill(2),
+                                        str(end_date.day).zfill(2), end_date.year)
         return first_day, last_day
 
     # Checks the inputted dates in the start date and end date entry fields, sends a warning message if a incorrect date format is found
