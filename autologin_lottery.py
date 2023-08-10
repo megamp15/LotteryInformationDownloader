@@ -36,6 +36,7 @@ def configDriver(dir, folder):
     path = temp.replace('/', '\\')
     global driver, wait
     options = Options()
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_experimental_option(
         "prefs",
         {
