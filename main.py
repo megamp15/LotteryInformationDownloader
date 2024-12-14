@@ -28,7 +28,7 @@ def main():
         # Set date range (example: last 30 days)
         # end_date = datetime.now()
         # start_date = end_date - timedelta(days=30)
-        invoice_details.set_date_range("11/06/2023", "12/01/2024")
+        invoice_details.set_date_range("11/06/2024", "12/01/2024")
 
         # Keep browser open for debugging
         input("Press Enter to close the browser...")

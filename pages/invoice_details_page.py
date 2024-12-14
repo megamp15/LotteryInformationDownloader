@@ -24,6 +24,7 @@ class InvoiceDetailsPage:
     CURRENT_MONTH_YEAR = (By.CLASS_NAME, "_720kb-datepicker-calendar-header-middle")
     YEAR_DROPDOWN = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar-header-middle')]//a")
     YEAR_OPTION = (By.XPATH, "//a[contains(@ng-click, 'setNewYear') and text()='{}']")
+    # TODAY_BUTTON = (By.XPATH, "//button[.//ng-transclude[contains(text(), 'Today')]]")
 
     def select_date(self, target_date):
         """Helper method to select a date from the calendar"""
@@ -112,23 +113,26 @@ class InvoiceDetailsPage:
         self.select_date(start_date)
 
         # Small delay between date selections
-        time.sleep(0.5)
+        time.sleep(2)
 
-        # print("\nSetting TO date...")
-        # # Select end date
+        # For end date, use Today button
+        # print("\nSetting TO date to today...")
         # to_calendar_icon = self.wait.until(
         #     EC.element_to_be_clickable(self.TO_DATE_CALENDAR_ICON)
         # )
         # self.driver.execute_script("arguments[0].click();", to_calendar_icon)
-        # self.select_date(end_date)
         
-        # # Click Apply button
-        # apply_button = self.wait.until(
-        #     EC.element_to_be_clickable(self.APPLY_BUTTON)
+        # today_button = self.wait.until(
+        #     EC.element_to_be_clickable(self.TODAY_BUTTON)
         # )
-        # self.driver.execute_script("arguments[0].click();", apply_button)
+        # self.driver.execute_script("arguments[0].click();", today_button)
+        # time.sleep(2)
 
-    # Add locators and methods specific to the Invoice Details page
-    # For example:
-    # INVOICE_TABLE = (By.ID, "invoice-table")
+        # Click Apply button
+        apply_button = self.wait.until(
+            EC.element_to_be_clickable(self.APPLY_BUTTON)
+        )
+        self.driver.execute_script("arguments[0].click();", apply_button)
+
+        
 
