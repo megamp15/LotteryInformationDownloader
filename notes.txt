@@ -1,0 +1,3 @@
+Using Python version 3.13.1
+Had to update tkinter
+

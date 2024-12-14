@@ -18,7 +18,7 @@ import os
 import time
 import datetime
 import math
-from win32com.client import Dispatch
+# from win32com.client import Dispatch
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
@@ -26,6 +26,9 @@ from zipfile import ZipFile
 from threading import Thread
 import sys
 from fake_useragent import UserAgent
+import subprocess
+import re
+import platform
 
 
 # Configure the chrome driver settings.
@@ -53,47 +56,48 @@ def configDriver(dir, folder):
 # A different page is loaded where we type in the password and click the second login button
 def login(user_name, password):
     # Chrome webDriver opens the lottery website with the link
-    driver.get("https://tx-lsp.lotteryservices.com/lsptx/public/lotteryhome")
+    # driver.get("https://tx-lsp.lotteryservices.com/lsptx/public/lotteryhome")
+    driver.get("https://txs.lotteryservices.com/RetailerWizard/#/home")
 
-    # Waits for the user_name textbox to load on the website and then type the user_name parameter into the textbox
-    try:
-        username_textbox = wait.until(
-            EC.presence_of_element_located((By.ID, "username"))
-        )
-        username_textbox.send_keys(user_name)
-    except:
-        print("ERROR: USERNAME TEXTBOX")
-        driver.close()
+    # # Waits for the user_name textbox to load on the website and then type the user_name parameter into the textbox
+    # try:
+    #     username_textbox = wait.until(
+    #         EC.presence_of_element_located((By.ID, "username"))
+    #     )
+    #     username_textbox.send_keys(user_name)
+    # except:
+    #     print("ERROR: USERNAME TEXTBOX")
+    #     driver.close()
 
-    # Waits for the button to load on the website and then click the log in button.
-    try:
-        first_login_button = wait.until(
-            EC.presence_of_all_elements_located((By.CLASS_NAME, "btn"))
-        )
-        first_login_button[0].submit()
-    except:
-        print("ERROR: FIRST LOGIN BUTTON")
-        driver.close()
+    # # Waits for the button to load on the website and then click the log in button.
+    # try:
+    #     first_login_button = wait.until(
+    #         EC.presence_of_all_elements_located((By.CLASS_NAME, "btn"))
+    #     )
+    #     first_login_button[0].submit()
+    # except:
+    #     print("ERROR: FIRST LOGIN BUTTON")
+    #     driver.close()
 
-    # Waits for the password textbox to load on the website and then type the password parameter into the textbox
-    try:
-        password_textbox = wait.until(
-            EC.presence_of_element_located((By.ID, "password"))
-        )
-        password_textbox.send_keys(password)
-    except:
-        print("ERROR: PASSWORD TEXTBOX")
-        driver.close()
+    # # Waits for the password textbox to load on the website and then type the password parameter into the textbox
+    # try:
+    #     password_textbox = wait.until(
+    #         EC.presence_of_element_located((By.ID, "password"))
+    #     )
+    #     password_textbox.send_keys(password)
+    # except:
+    #     print("ERROR: PASSWORD TEXTBOX")
+    #     driver.close()
 
-    # Waits for the button to load on the website and then click the log in button.
-    try:
-        second_login_button = wait.until(
-            EC.presence_of_all_elements_located((By.CLASS_NAME, "btn"))
-        )
-        second_login_button[0].submit()
-    except:
-        print("ERROR: SECOND LOGIN BUTTON")
-        driver.close()
+    # # Waits for the button to load on the website and then click the log in button.
+    # try:
+    #     second_login_button = wait.until(
+    #         EC.presence_of_all_elements_located((By.CLASS_NAME, "btn"))
+    #     )
+    #     second_login_button[0].submit()
+    # except:
+    #     print("ERROR: SECOND LOGIN BUTTON")
+    #     driver.close()
 
 
 # Configure the drop down menus and the textboxes for start and end date
@@ -295,21 +299,33 @@ def get_retailers(df):
 
 
 # Gets the version of the chrome webdriver currently used on the machine
-def get_version_webdriver(filepath):
-    parser=Dispatch("Scripting.FileSystemObject")
-    try:
-        return parser.GetFileVersion(filepath)
-    except Exception:
-        return None
-
 def get_version():
-    # The two locations that google chrome is downloaded to on computers
-    paths = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-             r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"]
-
-    # Version returned from the webdriver currently in use
-    version=list(filter(None, [get_version_webdriver(path) for path in paths]))[0]
-    return version
+    # Check if Windows
+    if platform.system() == 'Windows':
+        try:
+            from win32com.client import Dispatch
+            parser = Dispatch("Scripting.FileSystemObject")
+            version = parser.GetFileVersion(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
+            return version
+        except:
+            # Fallback version if Windows method fails
+            return "114.0.5735.90"
+    else:
+        try:
+            # For Linux/Mac
+            process = subprocess.Popen(['google-chrome', '--version'], stdout=subprocess.PIPE)
+            output = process.communicate()[0].decode('utf-8')
+            version = re.search(r'[\d.]+', output).group(0)
+        except:
+            try:
+                # For Mac alternative
+                process = subprocess.Popen(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--version'], stdout=subprocess.PIPE)
+                output = process.communicate()[0].decode('utf-8')
+                version = re.search(r'[\d.]+', output).group(0)
+            except:
+                # Fallback version if all methods fail
+                version = "114.0.5735.90"
+        return version
 
 # Update the webDriver
 def update_WebDriver():
@@ -336,6 +352,16 @@ class DownloaderGUI:
         master.title('Lottery Information Downloader')
         master.resizable(False, False)
 
+        # Create the variables before creating the notebook and frames
+        self.entry1 = StringVar()
+        self.entry2 = StringVar()
+        self.entry3 = StringVar()
+        self.entry4 = StringVar()
+        self.sel = StringVar()
+        self.single_retailer = StringVar()
+        self.delete = IntVar()
+        self.error = False
+
         # Styling the Labels and Buttons for better viewing
         self.style = ttk.Style()
         self.style.configure('TLabel', font=('Arial', 10))
@@ -346,24 +372,14 @@ class DownloaderGUI:
         self.tabs = ttk.Notebook(master)
         self.main_tab = ttk.Frame(self.tabs)
 
-        # Variables that are used with trace.
-        self.entry1 = StringVar(self.main_tab)
-        self.entry2 = StringVar(self.main_tab)
-        self.entry3 = StringVar(self.main_tab)
-        self.entry4 = StringVar(self.main_tab)
-        self.sel = StringVar(self.main_tab)
-        self.single_retailer = StringVar(self.main_tab)
-        self.delete = IntVar(self.main_tab)
-        self.error = False
-
         # The variables are updated everytime the user types in the entry fields or selects an option in the combobox
-        self.entry1.trace("w", self.validation)
-        self.entry2.trace("w", self.validation)
-        self.entry3.trace("w", self.validation)
-        self.entry4.trace("w", self.validation)
-        self.sel.trace("w", self.validation)
-        self.single_retailer.trace("w", self.validation)
-        self.delete.trace("w", self.validation)
+        self.entry1.trace_add("write", self.validation)
+        self.entry2.trace_add("write", self.validation)
+        self.entry3.trace_add("write", self.validation)
+        self.entry4.trace_add("write", self.validation)
+        self.sel.trace_add("write", self.validation)
+        self.single_retailer.trace_add("write", self.validation)
+        self.delete.trace_add("write", self.validation)
 
         # Getting the file and folder directory frame with Browse button
         self.file_frame = ttk.Frame(self.main_tab, relief=FLAT)
@@ -711,11 +727,11 @@ class DownloaderGUI:
         configDriver(path, folder)
         self.end_button.config(state='normal')
         login(user_name, password)
-        config_selects(retailer_num, date_start, date_end)
-        pack_inventory(date_start)
-        packs_Activated()
-        statement_sum(date_start)
-        close_driver()
+        # config_selects(retailer_num, date_start, date_end)
+        # pack_inventory(date_start)
+        # packs_Activated()
+        # statement_sum(date_start)
+        # close_driver()
 
     # Exits the web driver if we are in the middle of downloading and exits the GUI depending on the conditions.
     def exit_GUI(self, master, end=0):

@@ -4,3 +4,6 @@ webDrivers/
 *.log
 *.exe
 *.stackdump
+venv/
+.vscode/
+*.pyc
