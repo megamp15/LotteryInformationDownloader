@@ -30,23 +30,26 @@ def main():
         # Navigate to Invoice Details from summary dashboard
         summary_dashboard.click_invoice_details()
         time.sleep(2)
-
-        invoice_details.set_date_range("12/01/2024", "12/14/2024")
+        invoice_details.set_date_range("11/01/2024", "11/30/2024")
         time.sleep(2)
         invoice_details.download_invoices()
 
         # Navigate to Scratch Dashboard and then Liabilities
         side_menu.navigate_to_scratch_dashboard()
         scratch_dashboard.click_liabilities_details()
-        liabilities_details.set_date_range("12/01/2024", "12/14/2024")
+        liabilities_details.set_date_range("11/01/2024", "11/30/2024")
         time.sleep(2)
         liabilities_details.download_xlsx()
         time.sleep(2)
 
         # Navigate to Reports Dashboard
         side_menu.navigate_to_reports()
-        reports_page.set_date_range("12/01/2024", "12/07/2024")
+        reports_page.select_report("Pack Inventory")
+        reports_page.set_date_range("11/01/2024", "11/30/2024")
         time.sleep(2)
+        reports_page.click_search()
+        time.sleep(2)
+        # reports_page.download_reports()
 
         # Keep browser open for debugging
         input("Press Enter to close the browser...")
