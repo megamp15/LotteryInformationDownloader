@@ -24,8 +24,13 @@ class InvoiceDetailsPage:
     CURRENT_MONTH_YEAR = (By.CLASS_NAME, "_720kb-datepicker-calendar-header-middle")
     YEAR_DROPDOWN = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar-header-middle')]//a")
     YEAR_OPTION = (By.XPATH, "//a[contains(@ng-click, 'setNewYear') and text()='{}']")
-    # TODAY_BUTTON = (By.XPATH, "//button[.//ng-transclude[contains(text(), 'Today')]]")
-
+    # Update the TODAY_BUTTON locator to be specific to the active calendar
+    TODAY_BUTTON = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and .//div[contains(@class, '_720kb-datepicker-calendar-month')][contains(text(), 'December')]]//button[contains(@class, 'rw-button--contained')][.//ng-transclude[text()='Today']]")
+    
+    # Download related locators
+    DOWNLOAD_BUTTONS = (By.XPATH, "//tbody//tr//td[not(contains(@class, 'collapse-cell'))]//button[contains(@class, 'rw-button--outlined')]//i[contains(@class, 'fa-download')]/..")
+    CSV_DOWNLOAD_OPTION = (By.XPATH, "//ul[contains(@class, 'dropdown-menu') and contains(@style, 'display: block')]//a[.//label-details[contains(text(), 'csv')]]")
+    
     def select_date(self, target_date):
         """Helper method to select a date from the calendar"""
         target_month = target_date.strftime("%B")
@@ -116,17 +121,17 @@ class InvoiceDetailsPage:
         time.sleep(2)
 
         # For end date, use Today button
-        # print("\nSetting TO date to today...")
-        # to_calendar_icon = self.wait.until(
-        #     EC.element_to_be_clickable(self.TO_DATE_CALENDAR_ICON)
-        # )
-        # self.driver.execute_script("arguments[0].click();", to_calendar_icon)
-        
-        # today_button = self.wait.until(
-        #     EC.element_to_be_clickable(self.TODAY_BUTTON)
-        # )
-        # self.driver.execute_script("arguments[0].click();", today_button)
-        # time.sleep(2)
+        print("\nSetting TO date to today...")
+        to_calendar_icon = self.wait.until(
+            EC.element_to_be_clickable(self.TO_DATE_CALENDAR_ICON)
+        )
+        self.driver.execute_script("arguments[0].click();", to_calendar_icon)
+
+        today_button = self.wait.until(
+            EC.element_to_be_clickable(self.TODAY_BUTTON)
+        )
+        self.driver.execute_script("arguments[0].click();", today_button)
+        time.sleep(2)
 
         # Click Apply button
         apply_button = self.wait.until(
@@ -134,5 +139,28 @@ class InvoiceDetailsPage:
         )
         self.driver.execute_script("arguments[0].click();", apply_button)
 
-        
 
+    def download_invoices(self):
+        """Click download button for each invoice row and select CSV option"""
+        # Find all download buttons in the table
+        download_buttons = self.wait.until(
+            EC.presence_of_all_elements_located(self.DOWNLOAD_BUTTONS)
+        )
+        
+        print(f"Found {len(download_buttons)} download buttons")
+        
+        for i, button in enumerate(download_buttons, 1):
+            print(f"\nProcessing download button {i}")
+            
+        #     # Scroll button into view and click
+        #     self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
+        #     time.sleep(1)  # Allow time for any animations
+            self.driver.execute_script("arguments[0].click();", button)
+            
+        #     # Wait for and click CSV option
+            csv_option = self.wait.until(
+                EC.element_to_be_clickable(self.CSV_DOWNLOAD_OPTION)
+            )
+            print(f"CSV option found: {csv_option.get_attribute('innerHTML')}")
+            self.driver.execute_script("arguments[0].click();", csv_option)
+            time.sleep(1)  # Wait between rows
