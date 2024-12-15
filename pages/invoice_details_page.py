@@ -18,12 +18,13 @@ class InvoiceDetailsPage:
 
     FROM_DATE_CALENDAR_ICON = (By.XPATH, "//input[@id='from-date']/following-sibling::span[@class='calendar-icon']")
     TO_DATE_CALENDAR_ICON = (By.XPATH, "//input[@id='to-date']/following-sibling::span[@class='calendar-icon']")
-    CALENDAR_DAY = (By.XPATH, "//a[contains(@class, '_720kb-datepicker-calendar-day')]")
-    NEXT_MONTH_BUTTON = (By.XPATH, "//a[@title='Next']")
-    PREV_MONTH_BUTTON = (By.XPATH, "//a[@title='Prev']")
-    CURRENT_MONTH_YEAR = (By.CLASS_NAME, "_720kb-datepicker-calendar-header-middle")
-    YEAR_DROPDOWN = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar-header-middle')]//a")
-    YEAR_OPTION = (By.XPATH, "//a[contains(@ng-click, 'setNewYear') and text()='{}']")
+    
+    CALENDAR_DAY = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and contains(@class, '_720kb-datepicker-open')]//a[contains(@class, '_720kb-datepicker-calendar-day') and not(contains(@class, '_720kb-datepicker-disabled'))]")
+    NEXT_MONTH_BUTTON = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and contains(@class, '_720kb-datepicker-open')]//a[@title='Next']")
+    PREV_MONTH_BUTTON = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and contains(@class, '_720kb-datepicker-open')]//a[@title='Prev']")
+    CURRENT_MONTH_YEAR = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and contains(@class, '_720kb-datepicker-open')]//div[contains(@class, '_720kb-datepicker-calendar-header-middle')]")
+    YEAR_DROPDOWN = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and contains(@class, '_720kb-datepicker-open')]//div[contains(@class, '_720kb-datepicker-calendar-header-middle')]//a")
+    YEAR_OPTION = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and contains(@class, '_720kb-datepicker-open')]//a[contains(@ng-click, 'setNewYear') and text()='{}']")
     # Update the TODAY_BUTTON locator to be specific to the active calendar
     TODAY_BUTTON = (By.XPATH, "//div[contains(@class, '_720kb-datepicker-calendar') and .//div[contains(@class, '_720kb-datepicker-calendar-month')][contains(text(), 'December')]]//button[contains(@class, 'rw-button--contained')][.//ng-transclude[text()='Today']]")
     
@@ -39,61 +40,77 @@ class InvoiceDetailsPage:
 
         print(f"Attempting to select date: {target_date.strftime('%m/%d/%Y')}")
 
-        # Wait for calendar header to be visible
-        current_month_year = self.wait.until(
-            EC.presence_of_element_located(self.CURRENT_MONTH_YEAR)
-        ).text.split()
-        current_calendar_date = datetime.strptime(f"{current_month_year[0]} {current_month_year[1]}", "%B %Y")
-        print(f"Current calendar shows: {current_calendar_date.strftime('%m/%d/%Y')}")
-
-        # If year is different, change it first
-        if current_calendar_date.year != target_year:
-            print(f"Changing year from {current_calendar_date.year} to {target_year}")
-            # Click year dropdown
-            year_dropdown = self.wait.until(
-                EC.element_to_be_clickable(self.YEAR_DROPDOWN)
-            )
-            self.driver.execute_script("arguments[0].click();", year_dropdown)
-            print("Clicked year dropdown")
-
-            # Select target year
-            year_option = self.wait.until(
-                EC.element_to_be_clickable((By.XPATH, f"//a[contains(@ng-click, 'setNewYear') and text()='{target_year}']"))
-            )
-            self.driver.execute_script("arguments[0].click();", year_option)
-            print(f"Selected year: {target_year}")
-            time.sleep(0.5)  # Small delay for calendar update
-
-        # Now navigate months if needed
-        current_month_year = self.wait.until(
-            EC.presence_of_element_located(self.CURRENT_MONTH_YEAR)
-        ).text.split()
-        
-        while current_calendar_date.month != target_date.month:
-            if current_calendar_date < target_date:
-                print(f"Moving forward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
-                next_button = self.wait.until(EC.element_to_be_clickable(self.NEXT_MONTH_BUTTON))
-                self.driver.execute_script("arguments[0].click();", next_button)
-            else:
-                print(f"Moving backward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
-                prev_button = self.wait.until(EC.element_to_be_clickable(self.PREV_MONTH_BUTTON))
-                self.driver.execute_script("arguments[0].click();", prev_button)
-            time.sleep(0.5)
+        try:
+            # Wait for calendar header to be visible
             current_month_year = self.wait.until(
                 EC.presence_of_element_located(self.CURRENT_MONTH_YEAR)
             ).text.split()
             current_calendar_date = datetime.strptime(f"{current_month_year[0]} {current_month_year[1]}", "%B %Y")
+            print(f"Current calendar shows: {current_calendar_date.strftime('%m/%d/%Y')}")
 
-        # Select the day
-        print(f"Looking for day: {target_day}")
-        calendar_days = self.wait.until(
-            EC.presence_of_all_elements_located(self.CALENDAR_DAY)
-        )
-        for day in calendar_days:
-            if day.text == target_day and '_720kb-datepicker-disabled' not in day.get_attribute('class'):
-                self.driver.execute_script("arguments[0].click();", day)
-                print(f"Selected day: {target_day}")
-                break
+            # If year is different, change it first
+            if current_calendar_date.year != target_date.year:
+                print(f"Changing year from {current_calendar_date.year} to {target_year}")
+                # Click year dropdown
+                year_dropdown = self.wait.until(
+                    EC.element_to_be_clickable(self.YEAR_DROPDOWN)
+                )
+                self.driver.execute_script("arguments[0].click();", year_dropdown)
+                print("Clicked year dropdown")
+
+                time.sleep(1)  # Add small delay for dropdown to fully open
+
+                # Select target year
+                year_xpath = f"//div[contains(@class, '_720kb-datepicker-calendar') and contains(@class, '_720kb-datepicker-open')]//a[contains(@ng-click, 'setNewYear') and normalize-space(text())='{target_year}']"
+                year_option = self.wait.until(
+                    EC.element_to_be_clickable((By.XPATH, year_xpath))
+                )
+                print(f"Found year option: {target_year}")
+                self.driver.execute_script("arguments[0].click();", year_option)
+                print(f"Selected year: {target_year}")
+                time.sleep(1)  # Small delay for calendar update
+
+            # Now navigate months if needed
+            current_month_year = self.wait.until(
+                EC.presence_of_element_located(self.CURRENT_MONTH_YEAR)
+            ).text.split()
+            current_calendar_date = datetime.strptime(f"{current_month_year[0]} {current_month_year[1]}", "%B %Y")
+            
+            while current_calendar_date.month != target_date.month:
+                if current_calendar_date < target_date:
+                    print(f"Moving forward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
+                    next_button = self.wait.until(EC.element_to_be_clickable(self.NEXT_MONTH_BUTTON))
+                    self.driver.execute_script("arguments[0].click();", next_button)
+                else:
+                    print(f"Moving backward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
+                    prev_button = self.wait.until(EC.element_to_be_clickable(self.PREV_MONTH_BUTTON))
+                    self.driver.execute_script("arguments[0].click();", prev_button)
+                time.sleep(1)
+                current_month_year = self.wait.until(
+                    EC.presence_of_element_located(self.CURRENT_MONTH_YEAR)
+                ).text.split()
+                current_calendar_date = datetime.strptime(f"{current_month_year[0]} {current_month_year[1]}", "%B %Y")
+
+            # Select the day
+            print(f"Looking for day: {target_day}")
+            calendar_days = self.wait.until(
+                EC.presence_of_all_elements_located(self.CALENDAR_DAY)
+            )
+            day_found = False
+            for day in calendar_days:
+                if day.text == target_day and '_720kb-datepicker-disabled' not in day.get_attribute('class'):
+                    self.driver.execute_script("arguments[0].click();", day)
+                    print(f"Selected day: {target_day}")
+                    day_found = True
+                    break
+            
+            if not day_found:
+                print(f"Warning: Day {target_day} not found or not clickable")
+                print("Available days:", [day.text for day in calendar_days])
+
+        except Exception as e:
+            print(f"Error during date selection: {str(e)}")
+            raise
 
     def set_date_range(self, start_date, end_date):
         """
@@ -126,11 +143,13 @@ class InvoiceDetailsPage:
             EC.element_to_be_clickable(self.TO_DATE_CALENDAR_ICON)
         )
         self.driver.execute_script("arguments[0].click();", to_calendar_icon)
+        self.select_date(end_date)
 
-        today_button = self.wait.until(
-            EC.element_to_be_clickable(self.TODAY_BUTTON)
-        )
-        self.driver.execute_script("arguments[0].click();", today_button)
+
+        # today_button = self.wait.until(
+        #     EC.element_to_be_clickable(self.TODAY_BUTTON)
+        # )
+        # self.driver.execute_script("arguments[0].click();", today_button)
         time.sleep(2)
 
         # Click Apply button
@@ -149,18 +168,13 @@ class InvoiceDetailsPage:
         
         print(f"Found {len(download_buttons)} download buttons")
         
-        for i, button in enumerate(download_buttons, 1):
-            print(f"\nProcessing download button {i}")
+        # for i, button in enumerate(download_buttons, 1):
+        #     print(f"\nProcessing download button {i}")
+        #     self.driver.execute_script("arguments[0].click();", button)
             
-        #     # Scroll button into view and click
-        #     self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
-        #     time.sleep(1)  # Allow time for any animations
-            self.driver.execute_script("arguments[0].click();", button)
-            
-        #     # Wait for and click CSV option
-            csv_option = self.wait.until(
-                EC.element_to_be_clickable(self.CSV_DOWNLOAD_OPTION)
-            )
-            print(f"CSV option found: {csv_option.get_attribute('innerHTML')}")
-            self.driver.execute_script("arguments[0].click();", csv_option)
-            time.sleep(1)  # Wait between rows
+        # #     # Wait for and click CSV option
+        #     csv_option = self.wait.until(
+        #         EC.element_to_be_clickable(self.CSV_DOWNLOAD_OPTION)
+        #     )
+        #     self.driver.execute_script("arguments[0].click();", csv_option)
+        #     time.sleep(1)  # Wait between rows
