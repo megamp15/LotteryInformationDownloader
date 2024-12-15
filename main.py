@@ -3,6 +3,8 @@ from pages.login_page import LoginPage
 from pages.summary_dashboard_page import SummaryDashboardPage
 from pages.invoice_details_page import InvoiceDetailsPage
 from pages.scratch_dashboard_page import ScratchDashboardPage
+from pages.liabilities_details_page import LiabilitiesDetailsPage
+from pages.reports_page import ReportsPage
 from pages.components.side_menu import SideMenu
 from datetime import datetime, timedelta
 import time
@@ -16,6 +18,8 @@ def main():
         summary_dashboard = SummaryDashboardPage(driver, wait)
         invoice_details = InvoiceDetailsPage(driver, wait)
         scratch_dashboard = ScratchDashboardPage(driver, wait)
+        liabilities_details = LiabilitiesDetailsPage(driver, wait)
+        reports_page = ReportsPage(driver, wait)
         side_menu = SideMenu(driver, wait)
 
         # Login workflow - Goes to summary dashboard by default
@@ -27,13 +31,22 @@ def main():
         summary_dashboard.click_invoice_details()
         time.sleep(2)
 
-        invoice_details.set_date_range("11/06/2024", "12/14/2024")
+        invoice_details.set_date_range("12/01/2024", "12/14/2024")
         time.sleep(2)
         invoice_details.download_invoices()
 
-        # Navigate to Scratch Dashboard
+        # Navigate to Scratch Dashboard and then Liabilities
         side_menu.navigate_to_scratch_dashboard()
         scratch_dashboard.click_liabilities_details()
+        liabilities_details.set_date_range("12/01/2024", "12/14/2024")
+        time.sleep(2)
+        liabilities_details.download_xlsx()
+        time.sleep(2)
+
+        # Navigate to Reports Dashboard
+        side_menu.navigate_to_reports()
+        reports_page.set_date_range("12/01/2024", "12/07/2024")
+        time.sleep(2)
 
         # Keep browser open for debugging
         input("Press Enter to close the browser...")
