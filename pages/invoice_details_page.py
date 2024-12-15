@@ -138,7 +138,7 @@ class InvoiceDetailsPage:
         time.sleep(2)
 
         # For end date, use Today button
-        print("\nSetting TO date to today...")
+        print("\nSetting TO date...")
         to_calendar_icon = self.wait.until(
             EC.element_to_be_clickable(self.TO_DATE_CALENDAR_ICON)
         )
@@ -159,22 +159,52 @@ class InvoiceDetailsPage:
         self.driver.execute_script("arguments[0].click();", apply_button)
 
 
+    def has_no_results(self):
+        """
+        Check if the 'no results' message is displayed.
+        
+        Returns:
+            bool: True if no results are found, False otherwise
+        """
+        try:
+            # Look for the 'no results' div without ng-hide class
+            no_results_locator = (By.XPATH, "//div[contains(@class, 'md-table-body') and not(contains(@class, 'ng-hide'))]//div[contains(@class, 'no-data')]")
+            
+            # Wait a short time for the element to be visible
+            no_results_element = self.wait.until(
+                EC.visibility_of_element_located(no_results_locator)
+            )
+            return "Sorry, no results were found." in no_results_element.text
+        except:
+            return False
+
     def download_invoices(self):
         """Click download button for each invoice row and select CSV option"""
-        # Find all download buttons in the table
-        download_buttons = self.wait.until(
-            EC.presence_of_all_elements_located(self.DOWNLOAD_BUTTONS)
-        )
+        # First check if there are no results
+        if self.has_no_results():
+            print("No results found - nothing to download")
+            return False
         
-        print(f"Found {len(download_buttons)} download buttons")
-        
-        # for i, button in enumerate(download_buttons, 1):
-        #     print(f"\nProcessing download button {i}")
-        #     self.driver.execute_script("arguments[0].click();", button)
+        try:
+            # Find all download buttons in the table
+            download_buttons = self.wait.until(
+                EC.presence_of_all_elements_located(self.DOWNLOAD_BUTTONS)
+            )
             
-        # #     # Wait for and click CSV option
-        #     csv_option = self.wait.until(
-        #         EC.element_to_be_clickable(self.CSV_DOWNLOAD_OPTION)
-        #     )
-        #     self.driver.execute_script("arguments[0].click();", csv_option)
-        #     time.sleep(1)  # Wait between rows
+            print(f"Found {len(download_buttons)} download buttons")
+            
+            # for i, button in enumerate(download_buttons, 1):
+            #     print(f"\nProcessing download button {i}")
+            #     self.driver.execute_script("arguments[0].click();", button)
+            
+            # #     # Wait for and click CSV option
+            #     csv_option = self.wait.until(
+            #         EC.element_to_be_clickable(self.CSV_DOWNLOAD_OPTION)
+            #     )
+            #     self.driver.execute_script("arguments[0].click();", csv_option)
+            #     time.sleep(1)  # Wait between rows
+            
+            return True
+        except Exception as e:
+            print(f"Error during download process: {str(e)}")
+            return False
