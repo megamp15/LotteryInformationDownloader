@@ -29,7 +29,7 @@ class InvoiceDetailsPage:
             end_date (str or datetime): End date in 'MM/DD/YYYY' format or datetime object
         """
         self.date_picker.set_date_range(start_date, end_date)
-        # Click Apply button
+
         apply_button = self.wait.until(
             EC.element_to_be_clickable(self.APPLY_BUTTON)
         )
@@ -44,10 +44,7 @@ class InvoiceDetailsPage:
             bool: True if no results are found, False otherwise
         """
         try:
-            # Look for the 'no results' div without ng-hide class
             no_results_locator = (By.XPATH, "//div[contains(@class, 'md-table-body') and not(contains(@class, 'ng-hide'))]//div[contains(@class, 'no-data')]")
-            
-            # Wait a short time for the element to be visible
             no_results_element = self.wait.until(
                 EC.visibility_of_element_located(no_results_locator)
             )
@@ -57,13 +54,11 @@ class InvoiceDetailsPage:
 
     def download_invoices(self):
         """Click download button for each invoice row and select CSV option"""
-        # First check if there are no results
         if self.has_no_results():
             print("No results found - nothing to download")
             return False
         
         try:
-            # Find all download buttons in the table
             download_buttons = self.wait.until(
                 EC.presence_of_all_elements_located(self.DOWNLOAD_BUTTONS)
             )
@@ -74,12 +69,11 @@ class InvoiceDetailsPage:
                 print(f"\nProcessing download button {i}")
                 self.driver.execute_script("arguments[0].click();", button)
             
-            #     # Wait for and click CSV option
                 csv_option = self.wait.until(
                     EC.element_to_be_clickable(self.CSV_DOWNLOAD_OPTION)
                 )
                 self.driver.execute_script("arguments[0].click();", csv_option)
-                time.sleep(1)  # Wait between rows
+                time.sleep(1)
             
             return True
         except Exception as e:

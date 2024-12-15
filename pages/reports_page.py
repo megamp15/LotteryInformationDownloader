@@ -21,8 +21,8 @@ class ReportsPage:
     NO_RESULTS_MESSAGE = (By.XPATH, "//div[contains(text(), 'Sorry, no results were found.')]")
     
     # Report download related locators
-    REPORT_NAME_LINKS = (By.XPATH, "//td[not(contains(@class, 'collapse-cell'))]//dropdown//a[not(contains(@class, 'dropdown-toggle'))]")
-    CSV_DOWNLOAD_OPTION = (By.XPATH, "//ul[contains(@class, 'dropdown-menu')]//a[.//label-details[contains(text(), 'csv')]]")
+    REPORT_NAME_LINKS = (By.XPATH, "//td[contains(@class, 'md-table-cell')]//dropdown//span[@ng-transclude='dropdownToggle']//a[not(@ng-click)]")
+    CSV_DOWNLOAD_OPTION = (By.XPATH, "//ul[contains(@class, 'dropdown-menu') and contains(@style, 'display: block')]//a[.//label-details[contains(text(), 'csv')]]")
 
     def click_search(self):
         """Click the Search button"""
@@ -53,21 +53,19 @@ class ReportsPage:
         Args:
             report_name (str): Name of the report to select (e.g., 'Pack Inventory')
         """
-        # Click the dropdown to open it
         report_dropdown = self.wait.until(
             EC.element_to_be_clickable(self.REPORT_NAME_DROPDOWN)
         )
         self.driver.execute_script("arguments[0].click();", report_dropdown)
-        time.sleep(1)  # Wait for dropdown to open
+        time.sleep(1)
 
-        # Select the specific report
         report_option = self.wait.until(
             EC.element_to_be_clickable(
                 (By.XPATH, self.REPORT_OPTION[1].format(report_name))
             )
         )
         self.driver.execute_script("arguments[0].click();", report_option)
-        time.sleep(1)  # Wait for selection to register
+        time.sleep(1)
 
     def set_date_range(self, start_date, end_date):
         """
@@ -86,7 +84,6 @@ class ReportsPage:
             return False
 
         try:
-            # Find all report name links
             report_links = self.wait.until(
                 EC.presence_of_all_elements_located(self.REPORT_NAME_LINKS)
             )
@@ -97,13 +94,11 @@ class ReportsPage:
                 print(f"\nProcessing report {i}")
                 self.driver.execute_script("arguments[0].click();", link)
                 
-                # Wait for and click CSV option
                 csv_option = self.wait.until(
                     EC.element_to_be_clickable(self.CSV_DOWNLOAD_OPTION)
                 )
-                print(f"CSV option found: {csv_option.get_attribute('outerHTML')}")
                 self.driver.execute_script("arguments[0].click();", csv_option)
-                time.sleep(1)  # Wait between downloads
+                time.sleep(1)
             
             return True
         except Exception as e:

@@ -28,7 +28,6 @@ class LiabilitiesDetailsPage:
             end_date (str or datetime): End date in 'MM/DD/YYYY' format or datetime object
         """
         self.date_picker.set_date_range(start_date, end_date)
-        # Click Search button
         search_button = self.wait.until(
             EC.element_to_be_clickable(self.SEARCH_BUTTON)
         )
@@ -37,19 +36,17 @@ class LiabilitiesDetailsPage:
     def download_xlsx(self):
         """Click the Actions button and select the XLSX download option"""
         try:
-            # Click Actions button
             actions_button = self.wait.until(
                 EC.element_to_be_clickable(self.ACTIONS_BUTTON)
             )
             self.driver.execute_script("arguments[0].click();", actions_button)
-            time.sleep(1)  # Small wait for dropdown to appear
+            time.sleep(1)
 
-            # Click XLSX download option
             xlsx_download_option = self.wait.until(
                 EC.element_to_be_clickable(self.XLSX_DOWNLOAD_OPTION)
             )
             self.driver.execute_script("arguments[0].click();", xlsx_download_option)
-            time.sleep(1)  # Wait for download to start
+            time.sleep(1)
             return True
         except Exception as e:
             print(f"Error during XLSX download: {str(e)}")

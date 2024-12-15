@@ -49,7 +49,19 @@ def main():
         time.sleep(2)
         reports_page.click_search()
         time.sleep(2)
-        # reports_page.download_reports()
+        reports_page.download_reports()
+
+        reports_page.select_report("Packs Activated")
+        time.sleep(2)
+        reports_page.click_search()
+        time.sleep(2)
+        reports_page.download_reports()
+
+        reports_page.select_report("Full Statement")
+        time.sleep(2)
+        reports_page.click_search()
+        time.sleep(2)
+        reports_page.download_reports()
 
         # Keep browser open for debugging
         input("Press Enter to close the browser...")
