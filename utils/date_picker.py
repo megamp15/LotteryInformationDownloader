@@ -1,7 +1,11 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
+from config.settings import DEFAULT_SLEEP_TIME
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DatePicker:
     def __init__(self, driver, wait, date_input_ids=None):
@@ -39,7 +43,7 @@ class DatePicker:
         target_year = target_date.strftime("%Y")
         target_day = str(target_date.day)
 
-        print(f"Attempting to select date: {target_date.strftime('%m/%d/%Y')}")
+        logger.info(f"Attempting to select date: {target_date.strftime('%m/%d/%Y')}")
 
         try:
             # Wait for calendar header to be visible
@@ -47,17 +51,17 @@ class DatePicker:
                 EC.presence_of_element_located(self.CURRENT_MONTH_YEAR)
             ).text.split()
             current_calendar_date = datetime.strptime(f"{current_month_year[0]} {current_month_year[1]}", "%B %Y")
-            print(f"Current calendar shows: {current_calendar_date.strftime('%m/%d/%Y')}")
+            logger.info(f"Current calendar shows: {current_calendar_date.strftime('%m/%d/%Y')}")
 
             # If year is different, change it first
             if current_calendar_date.year != target_date.year:
-                print(f"Changing year from {current_calendar_date.year} to {target_year}")
+                logger.info(f"Changing year from {current_calendar_date.year} to {target_year}")
                 # Click year dropdown
                 year_dropdown = self.wait.until(
                     EC.element_to_be_clickable(self.YEAR_DROPDOWN)
                 )
                 self.driver.execute_script("arguments[0].click();", year_dropdown)
-                print("Clicked year dropdown")
+                logger.info("Clicked year dropdown")
 
                 time.sleep(1)  # Add small delay for dropdown to fully open
 
@@ -66,9 +70,9 @@ class DatePicker:
                 year_option = self.wait.until(
                     EC.element_to_be_clickable((By.XPATH, year_xpath))
                 )
-                print(f"Found year option: {target_year}")
+                logger.info(f"Found year option: {target_year}")
                 self.driver.execute_script("arguments[0].click();", year_option)
-                print(f"Selected year: {target_year}")
+                logger.info(f"Selected year: {target_year}")
                 time.sleep(1)  # Small delay for calendar update
 
             # Now navigate months if needed
@@ -79,11 +83,11 @@ class DatePicker:
             
             while current_calendar_date.month != target_date.month:
                 if current_calendar_date < target_date:
-                    print(f"Moving forward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
+                    logger.info(f"Moving forward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
                     next_button = self.wait.until(EC.element_to_be_clickable(self.NEXT_MONTH_BUTTON))
                     self.driver.execute_script("arguments[0].click();", next_button)
                 else:
-                    print(f"Moving backward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
+                    logger.info(f"Moving backward from {current_calendar_date.strftime('%m/%d/%Y')} to reach {target_date.strftime('%m/%d/%Y')}")
                     prev_button = self.wait.until(EC.element_to_be_clickable(self.PREV_MONTH_BUTTON))
                     self.driver.execute_script("arguments[0].click();", prev_button)
                 time.sleep(1)
@@ -93,7 +97,7 @@ class DatePicker:
                 current_calendar_date = datetime.strptime(f"{current_month_year[0]} {current_month_year[1]}", "%B %Y")
 
             # Select the day
-            print(f"Looking for day: {target_day}")
+            logger.info(f"Looking for day: {target_day}")
             calendar_days = self.wait.until(
                 EC.presence_of_all_elements_located(self.CALENDAR_DAY)
             )
@@ -101,16 +105,16 @@ class DatePicker:
             for day in calendar_days:
                 if day.text == target_day and '_720kb-datepicker-disabled' not in day.get_attribute('class'):
                     self.driver.execute_script("arguments[0].click();", day)
-                    print(f"Selected day: {target_day}")
+                    logger.info(f"Selected day: {target_day}")
                     day_found = True
                     break
             
             if not day_found:
-                print(f"Warning: Day {target_day} not found or not clickable")
-                print("Available days:", [day.text for day in calendar_days])
+                logger.warning(f"Day {target_day} not found or not clickable")
+                logger.debug("Available days:", [day.text for day in calendar_days])
 
         except Exception as e:
-            print(f"Error during date selection: {str(e)}")
+            logger.error(f"Error during date selection: {str(e)}")
             raise
 
     def set_date_range(self, start_date, end_date):
@@ -120,6 +124,9 @@ class DatePicker:
         if isinstance(end_date, str):
             end_date = datetime.strptime(end_date, "%m/%d/%Y")
 
+        # Add sleep before clicking calendar icons
+        time.sleep(DEFAULT_SLEEP_TIME)
+
         # Select start date
         from_calendar_icon = self.wait.until(
             EC.element_to_be_clickable(self.FROM_DATE_CALENDAR_ICON)
@@ -127,7 +134,7 @@ class DatePicker:
         self.driver.execute_script("arguments[0].click();", from_calendar_icon)
         self.select_date(start_date)
 
-        time.sleep(2)
+        time.sleep(DEFAULT_SLEEP_TIME)  # Add sleep between date selections
 
         # Select end date
         to_calendar_icon = self.wait.until(
@@ -135,5 +142,3 @@ class DatePicker:
         )
         self.driver.execute_script("arguments[0].click();", to_calendar_icon)
         self.select_date(end_date)
-
-        time.sleep(2)

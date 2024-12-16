@@ -1,25 +1,19 @@
+from pages.base_page import BasePage
+from utils.retry import retry_on_exception
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from config.settings import BASE_URL
 
-class LoginPage:
-    def __init__(self, driver, wait):
-        self.driver = driver
-        self.wait = wait
-        self.url = "https://txs.lotteryservices.com/RetailerWizard/#/home"
-
+class LoginPage(BasePage):
     # Locators
     EMAIL_INPUT = (By.NAME, "loginEmail")
     PASSWORD_INPUT = (By.NAME, "passwdRetailer")
     LOGIN_BUTTON = (By.XPATH, "//button[.//translate[text()='Log In']]")
 
     def navigate_to(self):
-        self.driver.get(self.url)
+        self.driver.get(f"{BASE_URL}/home")
 
+    @retry_on_exception()
     def login(self, email, password):
-        email_input = self.wait.until(EC.presence_of_element_located(self.EMAIL_INPUT))
-        password_input = self.wait.until(EC.presence_of_element_located(self.PASSWORD_INPUT))
-        login_button = self.wait.until(EC.element_to_be_clickable(self.LOGIN_BUTTON))
-
-        email_input.send_keys(email)
-        password_input.send_keys(password)
-        login_button.click()
+        self.find_element(self.EMAIL_INPUT).send_keys(email)
+        self.find_element(self.PASSWORD_INPUT).send_keys(password)
+        self.click_element(self.LOGIN_BUTTON)

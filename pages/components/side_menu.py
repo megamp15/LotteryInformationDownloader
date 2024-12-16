@@ -1,24 +1,21 @@
+from pages.base_page import BasePage
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from utils.retry import retry_on_exception
 
-class SideMenu:
-    def __init__(self, driver, wait):
-        self.driver = driver
-        self.wait = wait
-
+class SideMenu(BasePage):
     # Sidebar Menu Locators
     SUMMARY_DASHBOARD_LINK = (By.CSS_SELECTOR, "a[href='#/dashboard']")
     SCRATCH_DASHBOARD_LINK = (By.CSS_SELECTOR, "a[href='#/dashboard-instant/']")
     REPORTS_LINK = (By.CSS_SELECTOR, "a[href='#/reports']")
 
+    @retry_on_exception()
     def navigate_to_summary_dashboard(self):
-        link = self.wait.until(EC.element_to_be_clickable(self.SUMMARY_DASHBOARD_LINK))
-        self.driver.execute_script("arguments[0].click();", link)
+        self.click_element(self.SUMMARY_DASHBOARD_LINK)
 
+    @retry_on_exception()
     def navigate_to_scratch_dashboard(self):
-        link = self.wait.until(EC.element_to_be_clickable(self.SCRATCH_DASHBOARD_LINK))
-        self.driver.execute_script("arguments[0].click();", link)
+        self.click_element(self.SCRATCH_DASHBOARD_LINK)
 
+    @retry_on_exception()
     def navigate_to_reports(self):
-        link = self.wait.until(EC.element_to_be_clickable(self.REPORTS_LINK))
-        self.driver.execute_script("arguments[0].click();", link) 
+        self.click_element(self.REPORTS_LINK) 
