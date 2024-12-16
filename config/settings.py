@@ -9,7 +9,10 @@ LOGIN_EMAIL = "mpkasar@gmail.com"
 LOGIN_PASSWORD = "TX786110."
 
 # File paths
-DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "downloads")
+PROCESSED_DIR = os.path.join(BASE_DIR, "processed_data")
+ARCHIVE_DIR = os.path.join(BASE_DIR, "archived_data")
 
 # Timeouts
 DEFAULT_WAIT_TIME = 10

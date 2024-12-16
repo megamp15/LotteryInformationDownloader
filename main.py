@@ -1,15 +1,10 @@
-from contextlib import contextmanager
-from utils.webdriver_setup import WebDriverSetup
-from config.settings import *
-from pages.login_page import LoginPage
-from pages.summary_dashboard_page import SummaryDashboardPage
-from pages.invoice_details_page import InvoiceDetailsPage
-from pages.scratch_dashboard_page import ScratchDashboardPage
-from pages.liabilities_details_page import LiabilitiesDetailsPage
-from pages.reports_page import ReportsPage
-from pages.components.side_menu import SideMenu
+import tkinter as tk
+import argparse
 import logging
-import time
+from gui.views.main_window import MainWindow
+from gui.controllers.main_controller import MainController
+from core.data_extractor import DataExtractor, browser_session
+from config.settings import *
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,75 +12,47 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-@contextmanager
-def browser_session():
-    driver, wait = WebDriverSetup.get_driver()
-    try:
-        yield driver, wait
-    except Exception as e:
-        logger.error(f"Browser session error: {e}")
-        raise
-    finally:
-        driver.quit()
-
-class DataExtractor:
-    def __init__(self, driver, wait):
-        self.driver = driver
-        self.wait = wait
-        self.initialize_pages()
-
-    def initialize_pages(self):
-        """Initialize all page objects"""
-        self.login_page = LoginPage(self.driver, self.wait)
-        self.summary_dashboard = SummaryDashboardPage(self.driver, self.wait)
-        self.invoice_details = InvoiceDetailsPage(self.driver, self.wait)
-        self.scratch_dashboard = ScratchDashboardPage(self.driver, self.wait)
-        self.liabilities_details = LiabilitiesDetailsPage(self.driver, self.wait)
-        self.reports_page = ReportsPage(self.driver, self.wait)
-        self.side_menu = SideMenu(self.driver, self.wait)
-
-    def extract_invoice_data(self):
-        """Extract invoice related data"""
-        logger.info("Extracting invoice data...")
-        self.summary_dashboard.click_invoice_details()
-        self.invoice_details.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)
-        self.invoice_details.download_invoices()
-
-    def extract_liabilities_data(self):
-        """Extract liabilities related data"""
-        logger.info("Extracting liabilities data...")
-        self.side_menu.navigate_to_scratch_dashboard()
-        self.scratch_dashboard.click_liabilities_details()
-        self.liabilities_details.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)
-        self.liabilities_details.download_xlsx()
-
-    def extract_reports_data(self):
-        """Extract reports data"""
-        logger.info("Extracting reports data...")
-        self.side_menu.navigate_to_reports()        
-        self.reports_page.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)        
-        for report_type in REPORT_TYPES.values():
-            logger.info(f"Downloading report: {report_type}")
-            self.reports_page.select_report(report_type)            
-            self.reports_page.click_search()            
-            if not self.reports_page.download_reports():
-                logger.warning(f"Failed to download report: {report_type}")
-
-def main():
+def run_script_mode():
+    """Run in script mode (no GUI)"""
     with browser_session() as (driver, wait):
         extractor = DataExtractor(driver, wait)
         
-        # Login
+        # Login and extract data
         extractor.login_page.navigate_to()
         extractor.login_page.login(LOGIN_EMAIL, LOGIN_PASSWORD)
         
-        # Extract data
         extractor.extract_invoice_data()
         extractor.extract_liabilities_data()
         extractor.extract_reports_data()
+        
+        # Process downloaded data
+        extractor.process_downloaded_data()
 
-        # Debug pause
-        input("Press Enter to close the browser...")
+def run_gui_mode():
+    """Run in GUI mode"""
+    root = tk.Tk()
+    root.title("Lottery Information Downloader")
+    
+    controller = MainController()
+    main_window = MainWindow(root, controller)
+    main_window.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    root.mainloop()
+
+def main():
+    parser = argparse.ArgumentParser(description='Lottery Information Downloader')
+    parser.add_argument('--gui', action='store_true', help='Run in GUI mode')
+    parser.add_argument('--script', action='store_true', help='Run in script mode')
+    args = parser.parse_args()
+
+    # Default to GUI mode if no arguments provided
+    if not (args.gui or args.script):
+        args.gui = True
+
+    if args.gui:
+        run_gui_mode()
+    else:
+        run_script_mode()
 
 if __name__ == "__main__":
     main()
