@@ -20,6 +20,7 @@ def run_script_mode():
         # Login and extract data
         extractor.login_page.navigate_to()
         extractor.login_page.login(LOGIN_EMAIL, LOGIN_PASSWORD)
+        extractor.side_menu.select_retailer(RETAILER_NUM)
         
         extractor.extract_invoice_data()
         extractor.extract_liabilities_data()

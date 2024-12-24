@@ -1,9 +1,28 @@
-Lottery/
-webDrivers/
-*.xlsx
-*.log
-*.exe
-*.stackdump
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environment
 venv/
+env/
+ENV/
+
+# Downloads and processed data
+downloads/
+processed_data/
+archived_data/
+
+# IDE specific files
+.idea/
 .vscode/
-*.pyc
+*.swp
+*.swo

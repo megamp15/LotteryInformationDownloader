@@ -3,3 +3,4 @@ selenium
 pandas
 openpyxl
 fake-useragent
+python-dotenv
