@@ -1,4 +1,5 @@
 python-dateutil
 selenium
 pandas
+openpyxl
 fake-useragent

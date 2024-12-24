@@ -9,6 +9,13 @@ class MainWindow(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        
+        # Initialize StringVar variables
+        self.excel_path = tk.StringVar()
+        self.download_path = tk.StringVar()
+        self.start_date = tk.StringVar(value="MM/DD/YYYY")
+        self.end_date = tk.StringVar(value="MM/DD/YYYY")
+        
         self.init_ui()
 
     def init_ui(self):
@@ -27,17 +34,22 @@ class MainWindow(ttk.Frame):
         file_frame = ttk.LabelFrame(self, text="File Settings")
         file_frame.pack(fill="x", padx=5, pady=5)
 
-        # Excel file selection
-        ttk.Label(file_frame, text="Excel File:").grid(row=0, column=0, padx=5, pady=5)
-        self.excel_path = tk.StringVar()
-        ttk.Entry(file_frame, textvariable=self.excel_path, width=50).grid(row=0, column=1, padx=5)
-        ttk.Button(file_frame, text="Browse", command=self.browse_excel).grid(row=0, column=2, padx=5)
+        # Excel file selection row
+        excel_row = ttk.Frame(file_frame)
+        excel_row.pack(fill="x", padx=5, pady=5)
+        
+        ttk.Label(excel_row, text="Excel File:").pack(side="left")
+        ttk.Entry(excel_row, textvariable=self.excel_path, width=50).pack(side="left", padx=5)
+        ttk.Button(excel_row, text="Browse", command=self.browse_excel).pack(side="left", padx=2)
+        ttk.Button(excel_row, text="Download Template", command=self.download_template).pack(side="left", padx=2)
 
         # Download directory selection
-        ttk.Label(file_frame, text="Download Dir:").grid(row=1, column=0, padx=5, pady=5)
-        self.download_path = tk.StringVar()
-        ttk.Entry(file_frame, textvariable=self.download_path, width=50).grid(row=1, column=1, padx=5)
-        ttk.Button(file_frame, text="Browse", command=self.browse_dir).grid(row=1, column=2, padx=5)
+        dir_row = ttk.Frame(file_frame)
+        dir_row.pack(fill="x", padx=5, pady=5)
+        
+        ttk.Label(dir_row, text="Download Dir:").pack(side="left")
+        ttk.Entry(dir_row, textvariable=self.download_path, width=50).pack(side="left", padx=5)
+        ttk.Button(dir_row, text="Browse", command=self.browse_dir).pack(side="left", padx=2)
 
     def create_date_frame(self):
         date_frame = ttk.LabelFrame(self, text="Date Range")
@@ -45,12 +57,10 @@ class MainWindow(ttk.Frame):
 
         # Start date
         ttk.Label(date_frame, text="Start Date:").grid(row=0, column=0, padx=5, pady=5)
-        self.start_date = tk.StringVar(value="MM/DD/YYYY")
         ttk.Entry(date_frame, textvariable=self.start_date).grid(row=0, column=1, padx=5)
 
         # End date
         ttk.Label(date_frame, text="End Date:").grid(row=0, column=2, padx=5, pady=5)
-        self.end_date = tk.StringVar(value="MM/DD/YYYY")
         ttk.Entry(date_frame, textvariable=self.end_date).grid(row=0, column=3, padx=5)
 
     def create_action_frame(self):
@@ -129,3 +139,17 @@ class MainWindow(ttk.Frame):
     def update_status(self, message):
         self.status_text.insert("end", f"{datetime.now().strftime('%H:%M:%S')} - {message}\n")
         self.status_text.see("end") 
+
+    def download_template(self):
+        try:
+            save_path = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Excel files", "*.xlsx")],
+                initialfile="SAMPLE.xlsx",
+                title="Save Template Excel File"
+            )
+            if save_path:
+                self.controller.create_template(save_path)
+                messagebox.showinfo("Success", f"Template saved to:\n{save_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save template: {str(e)}") 

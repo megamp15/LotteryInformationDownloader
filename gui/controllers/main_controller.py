@@ -3,6 +3,7 @@ from threading import Thread
 from ..models.settings_model import SettingsModel
 from config.settings import *
 from core.data_extractor import browser_session, DataExtractor
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -55,3 +56,16 @@ class MainController:
                 logger.info("Download process completed successfully")
         except Exception as e:
             logger.error(f"Error during download: {str(e)}") 
+
+    def create_template(self, save_path):
+        """Create and save template Excel file"""
+        data = {
+            'USERNAME': ['example@email.com'],
+            'PASSWORD': ['password123'],
+            'RETAILER NUMBER': ['123456'],
+            'COMPANY': ['COMPANY_NAME']
+        }
+        
+        df = pd.DataFrame(data)
+        df.to_excel(save_path, index=False)
+        logger.info(f"Template Excel file created at: {save_path}")
