@@ -9,12 +9,20 @@ class MainWindow(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.root = parent  # Store root reference
         
         # Initialize StringVar variables
         self.excel_path = tk.StringVar()
         self.download_path = tk.StringVar()
         self.start_date = tk.StringVar(value="MM/DD/YYYY")
         self.end_date = tk.StringVar(value="MM/DD/YYYY")
+        self.delete_files = tk.BooleanVar()
+        
+        # Connect logging to status updates
+        self.controller.set_status_callback(self.update_status)
+        
+        # Bind completion event
+        self.root.bind('<<DownloadComplete>>', lambda e: self.controller.show_completion_message())
         
         self.init_ui()
 
@@ -67,21 +75,46 @@ class MainWindow(ttk.Frame):
         action_frame = ttk.Frame(self)
         action_frame.pack(fill="x", padx=5, pady=5)
 
+        # Delete files checkbox
+        ttk.Checkbutton(
+            action_frame, 
+            text="Delete all files in folder(s)", 
+            variable=self.delete_files
+        ).pack(side="left", padx=5)
+
         # Action buttons
-        ttk.Button(action_frame, text="Start Download", command=self.start_download).pack(side="left", padx=5)
-        ttk.Button(action_frame, text="Stop", command=self.stop_download).pack(side="left", padx=5)
-        ttk.Button(action_frame, text="Help", command=self.show_help).pack(side="right", padx=5)
+        ttk.Button(
+            action_frame, 
+            text="Start Download", 
+            command=self.start_download
+        ).pack(side="left", padx=5)
+        
+        ttk.Button(
+            action_frame, 
+            text="Stop", 
+            command=self.stop_download
+        ).pack(side="left", padx=5)
+        
+        ttk.Button(
+            action_frame, 
+            text="Help", 
+            command=self.show_help
+        ).pack(side="right", padx=5)
 
     def create_status_frame(self):
         status_frame = ttk.LabelFrame(self, text="Status")
         status_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Status text
-        self.status_text = tk.Text(status_frame, height=10, width=60)
-        self.status_text.pack(padx=5, pady=5)
+        # Create a frame to hold the text widget and scrollbar
+        text_frame = ttk.Frame(status_frame)
+        text_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Status text - adjust height and width
+        self.status_text = tk.Text(text_frame, height=15, width=80, wrap=tk.WORD)
+        self.status_text.pack(side="left", fill="both", expand=True)
         
         # Scrollbar
-        scrollbar = ttk.Scrollbar(status_frame, command=self.status_text.yview)
+        scrollbar = ttk.Scrollbar(text_frame, command=self.status_text.yview)
         scrollbar.pack(side="right", fill="y")
         self.status_text['yscrollcommand'] = scrollbar.set
 
@@ -106,7 +139,8 @@ class MainWindow(ttk.Frame):
                 self.excel_path.get(),
                 self.download_path.get(),
                 self.start_date.get(),
-                self.end_date.get()
+                self.end_date.get(),
+                self.delete_files.get()
             )
 
     def stop_download(self):
@@ -137,8 +171,11 @@ class MainWindow(ttk.Frame):
         return True
 
     def update_status(self, message):
+        """Update status text with timestamp and message"""
         self.status_text.insert("end", f"{datetime.now().strftime('%H:%M:%S')} - {message}\n")
-        self.status_text.see("end") 
+        self.status_text.see("end")
+        # Force update the GUI
+        self.status_text.update_idletasks()
 
     def download_template(self):
         try:

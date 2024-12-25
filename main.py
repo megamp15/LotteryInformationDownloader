@@ -5,6 +5,7 @@ from gui.views.main_window import MainWindow
 from gui.controllers.main_controller import MainController
 from core.data_extractor import DataExtractor, browser_session
 from config.settings import *
+from utils.webdriver_setup import WebDriverSetup
 
 logging.basicConfig(
     level=logging.INFO,
@@ -14,27 +15,35 @@ logger = logging.getLogger(__name__)
 
 def run_script_mode():
     """Run in script mode (no GUI)"""
-    with browser_session() as (driver, wait):
-        extractor = DataExtractor(driver, wait)
+    logger.info("Starting script mode")
+    
+    for retailer in RETAILERS_DATA:
+        # Create WebDriver with script mode settings
+        driver, wait = WebDriverSetup.get_driver(
+            mode='--script',
+            company_name=retailer["company_name"]
+        )
         
-        # Login and extract data
-        extractor.login_page.navigate_to()
-        extractor.login_page.login(LOGIN_EMAIL, LOGIN_PASSWORD)
-        extractor.side_menu.select_retailer(RETAILER_NUM)
-        
-        extractor.extract_invoice_data()
-        extractor.extract_liabilities_data()
-        extractor.extract_reports_data()
-        
-        # Process downloaded data
-        extractor.process_downloaded_data()
+        try:
+            extractor = DataExtractor(driver, wait, mode='--script')
+            extractor.add_retailer(
+                retailer["retailer_number"], 
+                retailer["company_name"]
+            )
+            
+            # Process retailer
+            extractor.process_all_retailers()
+            extractor.process_downloaded_data()
+            
+        finally:
+            driver.quit()
 
 def run_gui_mode():
     """Run in GUI mode"""
     root = tk.Tk()
     root.title("Lottery Information Downloader")
     
-    controller = MainController()
+    controller = MainController(root)
     main_window = MainWindow(root, controller)
     main_window.pack(fill="both", expand=True, padx=10, pady=10)
     

@@ -11,7 +11,16 @@ BASE_URL = os.getenv('BASE_URL')
 # Credentials
 LOGIN_EMAIL = os.getenv('LOGIN_EMAIL')
 LOGIN_PASSWORD = os.getenv('LOGIN_PASSWORD')
-RETAILER_NUM = os.getenv('RETAILER_NUM')
+
+# Parse retailer information from comma-separated strings
+RETAILER_NUMBERS = [num.strip() for num in os.getenv('RETAILER_NUM', '').split(',')]
+COMPANY_NAMES = [name.strip() for name in os.getenv('COMPANY_NAME', '').split(',')]
+
+# Create retailers data list from the two lists
+RETAILERS_DATA = [
+    {"retailer_number": num, "company_name": name} 
+    for num, name in zip(RETAILER_NUMBERS, COMPANY_NAMES)
+]
 
 # File paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

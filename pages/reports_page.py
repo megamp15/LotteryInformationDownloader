@@ -2,9 +2,10 @@ from pages.base_page import BasePage
 from selenium.webdriver.common.by import By
 from utils.retry import retry_on_exception
 from utils.date_picker import DatePicker
-from config.settings import DEFAULT_SLEEP_TIME
+from selenium.webdriver.support import expected_conditions as EC
 import logging
 import time
+from config.settings import DEFAULT_SLEEP_TIME
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ class ReportsPage(BasePage):
     SEARCH_BUTTON = (By.XPATH, "//button[.//ng-transclude[contains(text(), 'Search')]]")
     REPORT_NAME_DROPDOWN = (By.ID, "raportName")
     REPORT_OPTION = (By.XPATH, "//md-option//div[contains(text(), '{}')]")
-    NO_RESULTS_MESSAGE = (By.XPATH, "//div[contains(@class, 'md-table-body') and not(contains(@class, 'ng-hide'))]//div[contains(text(), 'Sorry, no results were found.')]")
+    TABLE_ROWS = (By.CSS_SELECTOR, "tr.md-table-row")
     REPORT_NAME_LINKS = (By.XPATH, "//td[contains(@class, 'md-table-cell')]//dropdown//span[@ng-transclude='dropdownToggle']//a[not(@ng-click)]")
     CSV_DOWNLOAD_OPTION = (By.XPATH, "//ul[contains(@class, 'dropdown-menu') and contains(@style, 'display: block')]//a[.//label-details[contains(text(), 'csv')]]")
 
@@ -30,40 +31,63 @@ class ReportsPage(BasePage):
         time.sleep(DEFAULT_SLEEP_TIME)
 
     def has_no_results(self):
-        return self.is_element_present(self.NO_RESULTS_MESSAGE)
+        logger.info("Checking for no results...")
+        
+        # Check table rows
+        rows = self.find_elements(self.TABLE_ROWS)
+        row_count = len(rows)
+        logger.info(f"Found {row_count} rows")
+        
+        if row_count > 1:
+            logger.info("Multiple rows found - has results")
+            return False
+        elif row_count == 1:
+            # If only one row, verify it's not just showing "no results"
+            no_results_locator = (By.XPATH, "//div[contains(text(), 'Sorry, no results were found.')]")
+            if self.is_element_present(no_results_locator):
+                logger.info("Single row with 'no results' message found")
+                return True
+            else:
+                logger.info("Single row with actual data found")
+                return False
+        else:
+            logger.info("No rows found")
+            return True
 
     @retry_on_exception()
     def select_report(self, report_name):
+        logger.info(f"Selecting report: {report_name}")
         self.click_element(self.REPORT_NAME_DROPDOWN)
-        time.sleep(DEFAULT_SLEEP_TIME)        
         report_option = (By.XPATH, self.REPORT_OPTION[1].format(report_name))
+        self.find_element(report_option)  # Wait for option to be present
         self.click_element(report_option)
-        time.sleep(DEFAULT_SLEEP_TIME)
+        logger.info(f"Selected report: {report_name}")
+
     def set_date_range(self, start_date, end_date):
+        logger.info(f"Setting date range from {start_date} to {end_date}")
         self.date_picker.set_date_range(start_date, end_date)
-        time.sleep(DEFAULT_SLEEP_TIME)
+        logger.info("Date range set")
+
     @retry_on_exception()
     def download_reports(self):
-        time.sleep(DEFAULT_SLEEP_TIME)
-        
+        """Download reports if available"""
         if self.has_no_results():
             logger.info("No results found - nothing to download")
             return False
         
         try:
+            logger.info("Starting reports download...")
             report_links = self.find_elements(self.REPORT_NAME_LINKS)
+            logger.info(f"Found {len(report_links)} reports to download")
             
             if not report_links:
-                logger.info("No report links found")
                 return False
-                
-            for link in report_links:
+            
+            for i, link in enumerate(report_links, 1):
                 self.driver.execute_script("arguments[0].click();", link)
-                time.sleep(1)
-                self.click_element(self.CSV_DOWNLOAD_OPTION)
-                time.sleep(2)
+                self.click_element(self.CSV_DOWNLOAD_OPTION, sleep_after=1)
             
             return True
         except Exception as e:
-            logger.error(f"Error during download process: {str(e)}")
+            logger.error(f"Error downloading reports: {str(e)}")
             return False
