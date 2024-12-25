@@ -14,7 +14,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def run_script_mode():
-    """Run in script mode (no GUI)"""
+    """Run in script mode"""
     logger.info("Starting script mode")
     
     for retailer in RETAILERS_DATA:
@@ -25,7 +25,13 @@ def run_script_mode():
         )
         
         try:
-            extractor = DataExtractor(driver, wait, mode='--script')
+            extractor = DataExtractor(
+                driver, 
+                wait, 
+                mode='--script',
+                company_name=retailer["company_name"],
+                download_path='downloads'
+            )
             extractor.add_retailer(
                 retailer["retailer_number"], 
                 retailer["company_name"]

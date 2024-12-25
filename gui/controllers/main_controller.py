@@ -73,21 +73,41 @@ class MainController:
                 # Delete files for single retailer
                 del_file_dir = os.path.join(download_dir, single_retailer.strip())
                 if os.path.exists(del_file_dir):
-                    del_file_list = os.listdir(del_file_dir)
-                    for f in del_file_list:
-                        os.remove(os.path.join(del_file_dir, f))
+                    for subdir in ['raw', 'processed']:
+                        subdir_path = os.path.join(del_file_dir, subdir)
+                        if os.path.exists(subdir_path):
+                            try:
+                                for f in os.listdir(subdir_path):
+                                    file_path = os.path.join(subdir_path, f)
+                                    try:
+                                        if os.path.isfile(file_path):
+                                            os.remove(file_path)
+                                    except Exception as e:
+                                        logger.warning(f"Could not delete file {f}: {str(e)}")
+                            except Exception as e:
+                                logger.warning(f"Could not access directory {subdir}: {str(e)}")
                     logger.info(f"Deleted files for {single_retailer}")
             else:
                 # Delete files for all retailers
                 for retailer in df['COMPANY']:
-                    del_file_dir = os.path.join(download_dir, retailer.strip())
-                    if os.path.exists(del_file_dir):
-                        del_file_list = os.listdir(del_file_dir)
-                        for f in del_file_list:
-                            os.remove(os.path.join(del_file_dir, f))
+                    retailer_dir = os.path.join(download_dir, retailer.strip())
+                    if os.path.exists(retailer_dir):
+                        for subdir in ['raw', 'processed']:
+                            subdir_path = os.path.join(retailer_dir, subdir)
+                            if os.path.exists(subdir_path):
+                                try:
+                                    for f in os.listdir(subdir_path):
+                                        file_path = os.path.join(subdir_path, f)
+                                        try:
+                                            if os.path.isfile(file_path):
+                                                os.remove(file_path)
+                                        except Exception as e:
+                                            logger.warning(f"Could not delete file {f}: {str(e)}")
+                                except Exception as e:
+                                    logger.warning(f"Could not access directory {subdir}: {str(e)}")
                 logger.info("Deleted files for all retailers")
         except Exception as e:
-            logger.error(f"Error deleting files: {str(e)}")
+            logger.error(f"Error in delete_files: {str(e)}")
 
     def _download_process(self, excel_path, download_dir, start_date, end_date, delete_files=False):
         try:
@@ -117,7 +137,13 @@ class MainController:
                         download_path=download_dir
                     )
                     
-                    extractor = DataExtractor(driver, wait, mode='--gui')
+                    extractor = DataExtractor(
+                        driver, 
+                        wait, 
+                        mode='--gui',
+                        company_name=company_name,
+                        download_path=download_dir
+                    )
                     extractor.login_page.navigate_to()
                     extractor.login_page.login(username, row['PASSWORD'].strip())
                     

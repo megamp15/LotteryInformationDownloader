@@ -11,6 +11,7 @@ from pages.liabilities_details_page import LiabilitiesDetailsPage
 from pages.reports_page import ReportsPage
 from pages.components.side_menu import SideMenu
 from data_processors.report_processor import ReportProcessor
+from data_processors.liability_processor import LiabilityProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -31,27 +32,27 @@ class RetailerInfo:
         self.company_name = company_name
 
 class DataExtractor:
-    def __init__(self, driver, wait, mode='--script'):
+    def __init__(self, driver, wait, mode='--script', company_name=None, download_path=None):
         self.driver = driver
         self.wait = wait
         self.mode = mode
-        self.initialize_pages()
-        self.report_processor = ReportProcessor()
-        self.retailers = []  # List to store RetailerInfo objects
+        self.company_name = company_name
+        self.download_path = download_path if download_path else 'downloads'
+        self.retailer_number = None
 
-    def initialize_pages(self):
-        """Initialize all page objects"""
-        self.login_page = LoginPage(self.driver, self.wait)
-        self.summary_dashboard = SummaryDashboardPage(self.driver, self.wait)
-        self.invoice_details = InvoiceDetailsPage(self.driver, self.wait)
-        self.scratch_dashboard = ScratchDashboardPage(self.driver, self.wait)
-        self.liabilities_details = LiabilitiesDetailsPage(self.driver, self.wait)
-        self.reports_page = ReportsPage(self.driver, self.wait)
-        self.side_menu = SideMenu(self.driver, self.wait)
+        # Initialize pages
+        self.login_page = LoginPage(driver, wait)
+        self.summary_dashboard = SummaryDashboardPage(driver, wait)
+        self.invoice_details = InvoiceDetailsPage(driver, wait)
+        self.scratch_dashboard = ScratchDashboardPage(driver, wait)
+        self.liabilities_details = LiabilitiesDetailsPage(driver, wait)
+        self.reports_page = ReportsPage(driver, wait)
+        self.side_menu = SideMenu(driver, wait)
 
     def add_retailer(self, retailer_number, company_name):
-        """Add a retailer to be processed"""
-        self.retailers.append(RetailerInfo(retailer_number, company_name))
+        """Add retailer info for script mode"""
+        self.retailer_number = retailer_number
+        self.company_name = company_name
 
     def process_all_retailers(self):
         """Process data for all retailers"""
@@ -61,18 +62,17 @@ class DataExtractor:
         self.login_page.navigate_to()
         self.login_page.login(LOGIN_EMAIL, LOGIN_PASSWORD)
         
-        for retailer in self.retailers:
-            logger.info(f"Processing retailer {retailer.retailer_number} for {retailer.company_name}")
-            
-            # Select the retailer
-            self.side_menu.select_retailer(retailer.retailer_number)
-            time.sleep(1)  # Wait for retailer selection to take effect
-            
-        # Extract data for this retailer
-            self.extract_invoice_data()
-            self.extract_liabilities_data()
-            self.extract_reports_data()
-            self.process_downloaded_data()
+        logger.info(f"Processing retailer {self.retailer_number} for {self.company_name}")
+        
+        # Select the retailer
+        self.side_menu.select_retailer(self.retailer_number)
+        time.sleep(1)  # Wait for retailer selection to take effect
+        
+        # # Extract data for this retailer
+        self.extract_invoice_data()
+        self.extract_liabilities_data()
+        self.extract_reports_data()
+        self.process_downloaded_data()
 
     def extract_invoice_data(self):
         """Extract invoice related data"""
@@ -83,11 +83,25 @@ class DataExtractor:
 
     def extract_liabilities_data(self):
         """Extract liabilities related data"""
-        logger.info("Extracting liabilities data...")
-        self.side_menu.navigate_to_scratch_dashboard()
-        self.scratch_dashboard.click_liabilities_details()
-        self.liabilities_details.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)
-        self.liabilities_details.download_xlsx()
+        try:
+            logger.info("Extracting liabilities data...")
+            
+            # Get current retailer info if not set (GUI mode)
+            if not self.company_name:
+                current_retailer = self.side_menu.get_current_retailer()
+                if current_retailer:
+                    self.company_name = current_retailer
+                else:
+                    logger.error("No retailer selected")
+                    return
+            
+            self.side_menu.navigate_to_scratch_dashboard()
+            self.scratch_dashboard.click_liabilities_details()
+            self.liabilities_details.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)
+            self.liabilities_details.download_xlsx()
+            
+        except Exception as e:
+            logger.error(f"Error extracting liabilities data: {str(e)}")
 
     def extract_reports_data(self):
         """Extract reports data"""
@@ -116,5 +130,20 @@ class DataExtractor:
 
     def process_downloaded_data(self):
         """Process all downloaded data"""
-        logger.info("Processing downloaded data...")
-        # self.report_processor.process_all_reports() 
+        try:
+            if not self.company_name:
+                logger.error("No company name provided for processing")
+                return
+
+            logger.info(f"Processing data for company: {self.company_name}")
+                
+            # Process liability data first
+            liability_processor = LiabilityProcessor(self.download_path, self.company_name)
+            liability_processor.process_liability_data()
+            
+            # Then process any remaining reports
+            report_processor = ReportProcessor(self.download_path, self.company_name)
+            report_processor.process_report_data()
+            
+        except Exception as e:
+            logger.error(f"Error processing downloaded data: {str(e)}") 

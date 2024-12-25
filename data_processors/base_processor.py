@@ -1,13 +1,22 @@
+import os
 import pandas as pd
 import logging
 from utils.file_manager import FileManager
 
 logger = logging.getLogger(__name__)
 
-class BaseDataProcessor:
-    def __init__(self):
-        self.file_manager = FileManager()
-        self.file_manager.ensure_directories()
+class BaseProcessor:
+    def __init__(self, download_dir, company_name):
+        self.download_dir = download_dir
+        self.company_name = company_name
+        self.company_dir = os.path.join(download_dir, company_name)
+        self.raw_dir = os.path.join(self.company_dir, 'raw')
+        self.processed_dir = os.path.join(self.company_dir, 'processed')
+        
+        # Create directories if they don't exist
+        for directory in [self.raw_dir, self.processed_dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
     def read_csv(self, file_path):
         """Read CSV file with proper encoding and error handling"""
