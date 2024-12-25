@@ -26,7 +26,7 @@ class MainController:
         self.current_thread = None
         self.stop_requested = False
         self.gui_handler = None
-        self.root = root  # Store root window reference directly
+        self.root = root
 
     def set_status_callback(self, callback):
         """Set up logging to GUI"""
@@ -144,22 +144,9 @@ class MainController:
                     time.sleep(2)
                     
             logger.info("All retailers processed successfully")
-            # Schedule the messagebox in the main thread
-            if self.root:
-                self.root.after(100, self._show_completion_dialog)
             
         except Exception as e:
             logger.error(f"Error during download process: {str(e)}")
-
-    def _show_completion_dialog(self):
-        """Show completion dialog in main thread"""
-        try:
-            messagebox.showinfo(
-                "Download Complete",
-                "All retailers have been processed successfully!\n\nYou can find the downloaded files in the selected download directory."
-            )
-        except Exception as e:
-            logger.error(f"Error showing completion dialog: {str(e)}")
 
     def create_template(self, save_path):
         """Create and save template Excel file"""

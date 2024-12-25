@@ -9,7 +9,7 @@ class MainWindow(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.root = parent  # Store root reference
+        self.root = parent
         
         # Initialize StringVar variables
         self.excel_path = tk.StringVar()
@@ -20,9 +20,6 @@ class MainWindow(ttk.Frame):
         
         # Connect logging to status updates
         self.controller.set_status_callback(self.update_status)
-        
-        # Bind completion event
-        self.root.bind('<<DownloadComplete>>', lambda e: self.controller.show_completion_message())
         
         self.init_ui()
 
