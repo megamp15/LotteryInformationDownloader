@@ -182,7 +182,20 @@ class MainWindow(ttk.Frame):
         if not self.download_path.get():
             messagebox.showerror("Error", "Please select a download directory")
             return False
-        # Add more validation as needed
+        if not self.validate_dates():
+            return False
+        return True
+
+    def validate_dates(self):
+        try:
+            start_date = datetime.strptime(self.start_date.get(), "%m/%d/%Y")
+            end_date = datetime.strptime(self.end_date.get(), "%m/%d/%Y")
+            if start_date > end_date:
+                messagebox.showerror("Error", "Start date must be before end date")
+                return False
+        except ValueError:
+            messagebox.showerror("Error", "Please enter dates in MM/DD/YYYY format")
+            return False
         return True
 
     def update_status(self, message):

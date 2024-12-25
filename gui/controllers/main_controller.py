@@ -160,7 +160,8 @@ class MainController:
                     if not self.stop_requested:
                         extractor.process_downloaded_data()
                     
-                    logger.info(f"Completed processing {company_name}")
+                    if not self.stop_requested:
+                        logger.info(f"Completed processing {company_name}")
                     
                 except Exception as e:
                     logger.error(f"Error processing {company_name}: {str(e)}")
@@ -169,10 +170,14 @@ class MainController:
                     driver.quit()
                     time.sleep(2)
                     
-            logger.info("All retailers processed successfully")
+            if not self.stop_requested:
+                logger.info("All retailers processed successfully")
             
         except Exception as e:
             logger.error(f"Error during download process: {str(e)}")
+        finally:
+            if self.stop_requested:
+                logger.info("Download Process stopped")
 
     def create_template(self, save_path):
         """Create and save template Excel file"""
