@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,17 +12,34 @@ class MainWindow(ttk.Frame):
         self.controller = controller
         self.root = parent
         
-        # Initialize StringVar variables
+        # Initialize StringVar variables with default dates
+        default_start_date, default_end_date = self.calculate_default_dates()
         self.excel_path = tk.StringVar()
         self.download_path = tk.StringVar()
-        self.start_date = tk.StringVar(value="MM/DD/YYYY")
-        self.end_date = tk.StringVar(value="MM/DD/YYYY")
+        self.start_date = tk.StringVar(value=default_start_date)
+        self.end_date = tk.StringVar(value=default_end_date)
         self.delete_files = tk.BooleanVar()
         
         # Connect logging to status updates
         self.controller.set_status_callback(self.update_status)
         
         self.init_ui()
+
+    def calculate_default_dates(self):
+        """Calculate default start and end dates."""
+        d = datetime.today()
+
+        # Calculate the first day of the previous month
+        start_date = d - relativedelta(months=1)
+        start_date = start_date.replace(day=1)
+
+        # Calculate the last day of the previous month
+        end_date = start_date + relativedelta(months=1) - timedelta(days=1)
+
+        first_day = "{0}/{1}/{2}".format(str(start_date.month).zfill(2), str(start_date.day).zfill(2), start_date.year)
+        last_day = "{0}/{1}/{2}".format(str(end_date.month).zfill(2), str(end_date.day).zfill(2), end_date.year)
+        
+        return first_day, last_day
 
     def init_ui(self):
         # Configure styles
