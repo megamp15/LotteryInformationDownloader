@@ -8,8 +8,8 @@ from config.settings import DEFAULT_START_DATE, DEFAULT_END_DATE
 logger = logging.getLogger(__name__)
 
 class LiabilityProcessor(BaseProcessor):
-    def __init__(self, download_dir, company_name):
-        super().__init__(download_dir, company_name)
+    def __init__(self, download_dir, company_name, start_date=None, end_date=None):
+        super().__init__(download_dir, company_name, start_date, end_date)
         
     def get_week_ranges(self, start_date_str, end_date_str):
         """Calculate week ranges from start to end date"""
@@ -81,8 +81,12 @@ class LiabilityProcessor(BaseProcessor):
                         retailer_number = part
                         break
 
-                # Get dynamic week ranges based on settings
-                week_ranges = self.get_week_ranges(DEFAULT_START_DATE, DEFAULT_END_DATE)
+                # Use instance dates or fall back to defaults
+                start_date = self.start_date or DEFAULT_START_DATE
+                end_date = self.end_date or DEFAULT_END_DATE
+
+                # Get dynamic week ranges based on dates
+                week_ranges = self.get_week_ranges(start_date, end_date)
 
                 # Create separate CSV for each week range
                 for week_end, start_date, end_date in week_ranges:

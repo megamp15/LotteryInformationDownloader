@@ -3,6 +3,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 import os
 import logging
+import chromedriver_autoinstaller
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +14,13 @@ class WebDriverSetup:
         """
         Configure and return Chrome WebDriver with appropriate download settings
         """
+        # Install ChromeDriver and get its path
+        chromedriver_path = chromedriver_autoinstaller.install()
+
+        # Add ChromeDriver to PATH if on Windows and not already in PATH
+        if sys.platform.startswith('win') and chromedriver_path not in os.environ['PATH']:
+            os.environ['PATH'] += os.pathsep + os.path.dirname(chromedriver_path)
+
         chrome_options = Options()
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
         chrome_options.add_argument('--headless')

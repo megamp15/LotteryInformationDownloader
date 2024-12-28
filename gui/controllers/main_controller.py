@@ -142,7 +142,9 @@ class MainController:
                         wait, 
                         mode='--gui',
                         company_name=company_name,
-                        download_path=download_dir
+                        download_path=download_dir,
+                        start_date=start_date,
+                        end_date=end_date
                     )
                     extractor.login_page.navigate_to()
                     extractor.login_page.login(username, row['PASSWORD'].strip())

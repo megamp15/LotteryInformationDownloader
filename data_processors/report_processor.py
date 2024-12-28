@@ -8,8 +8,8 @@ from config.settings import DOWNLOAD_DIR, PROCESSED_DIR
 logger = logging.getLogger(__name__)
 
 class ReportProcessor(BaseProcessor):
-    def __init__(self, download_dir, company_name):
-        super().__init__(download_dir, company_name)
+    def __init__(self, download_dir, company_name, start_date=None, end_date=None):
+        super().__init__(download_dir, company_name, start_date, end_date)
 
     def process_report_data(self):
         """Process downloaded report data"""

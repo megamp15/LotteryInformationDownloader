@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Base URLs
-BASE_URL = os.getenv('BASE_URL')
+BASE_URL = os.getenv('BASE_URL', 'https://txs.lotteryservices.com/RetailerWizard/#')
 
 # Credentials
 LOGIN_EMAIL = os.getenv('LOGIN_EMAIL')

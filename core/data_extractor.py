@@ -32,12 +32,14 @@ class RetailerInfo:
         self.company_name = company_name
 
 class DataExtractor:
-    def __init__(self, driver, wait, mode='--script', company_name=None, download_path=None):
+    def __init__(self, driver, wait, mode='--script', company_name=None, download_path=None, start_date=None, end_date=None):
         self.driver = driver
         self.wait = wait
         self.mode = mode
         self.company_name = company_name
-        self.download_path = download_path if download_path else 'downloads'
+        self.download_path = download_path
+        self.start_date = start_date or DEFAULT_START_DATE
+        self.end_date = end_date or DEFAULT_END_DATE
         self.retailer_number = None
 
         # Initialize pages
@@ -78,7 +80,7 @@ class DataExtractor:
         """Extract invoice related data"""
         logger.info("Extracting invoice data...")
         self.summary_dashboard.click_invoice_details()
-        self.invoice_details.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)
+        self.invoice_details.set_date_range(self.start_date, self.end_date)
         self.invoice_details.download_invoices()
 
     def extract_liabilities_data(self):
@@ -97,7 +99,7 @@ class DataExtractor:
             
             self.side_menu.navigate_to_scratch_dashboard()
             self.scratch_dashboard.click_liabilities_details()
-            self.liabilities_details.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)
+            self.liabilities_details.set_date_range(self.start_date, self.end_date)
             self.liabilities_details.download_xlsx()
             
         except Exception as e:
@@ -109,7 +111,7 @@ class DataExtractor:
             logger.info("Extracting reports data...")
             self.side_menu.navigate_to_reports()
             
-            self.reports_page.set_date_range(DEFAULT_START_DATE, DEFAULT_END_DATE)
+            self.reports_page.set_date_range(self.start_date, self.end_date)
             
             for report_type in REPORT_TYPES.values():
                 try:
@@ -138,11 +140,11 @@ class DataExtractor:
             logger.info(f"Processing data for company: {self.company_name}")
                 
             # Process liability data first
-            liability_processor = LiabilityProcessor(self.download_path, self.company_name)
+            liability_processor = LiabilityProcessor(self.download_path, self.company_name, self.start_date, self.end_date)
             liability_processor.process_liability_data()
             
             # Then process any remaining reports
-            report_processor = ReportProcessor(self.download_path, self.company_name)
+            report_processor = ReportProcessor(self.download_path, self.company_name, self.start_date, self.end_date)
             report_processor.process_report_data()
             
         except Exception as e:

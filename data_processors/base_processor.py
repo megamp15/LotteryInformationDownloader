@@ -6,12 +6,14 @@ from utils.file_manager import FileManager
 logger = logging.getLogger(__name__)
 
 class BaseProcessor:
-    def __init__(self, download_dir, company_name):
+    def __init__(self, download_dir, company_name, start_date=None, end_date=None):
         self.download_dir = download_dir
         self.company_name = company_name
         self.company_dir = os.path.join(download_dir, company_name)
         self.raw_dir = os.path.join(self.company_dir, 'raw')
         self.processed_dir = os.path.join(self.company_dir, 'processed')
+        self.start_date = start_date
+        self.end_date = end_date
         
         # Create directories if they don't exist
         for directory in [self.raw_dir, self.processed_dir]:
