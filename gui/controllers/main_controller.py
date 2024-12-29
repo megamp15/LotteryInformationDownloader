@@ -146,9 +146,12 @@ class MainController:
                         start_date=start_date,
                         end_date=end_date
                     )
+                    logger.info(f"Navigating to Lottery Website")
                     extractor.login_page.navigate_to()
+                    time.sleep(2)
+                    logger.info(f"Logging in to Lottery Website")
                     extractor.login_page.login(username, row['PASSWORD'].strip())
-                    
+                    time.sleep(2)
                     logger.info(f"Selecting retailer {retailer_number}")
                     extractor.side_menu.select_retailer(retailer_number)
                     time.sleep(2)

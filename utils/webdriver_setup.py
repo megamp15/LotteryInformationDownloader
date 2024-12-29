@@ -53,6 +53,7 @@ class WebDriverSetup:
         
         driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(3)
+        driver.set_window_size(1024, 768)
         wait = WebDriverWait(driver, 120)
         
         return driver, wait
