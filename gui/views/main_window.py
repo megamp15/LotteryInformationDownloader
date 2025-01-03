@@ -138,23 +138,37 @@ class MainWindow(ttk.Frame):
         button_frame = ttk.Frame(action_frame)
         button_frame.pack(fill="x", padx=5, pady=5)
         
+        # Left side buttons
+        left_buttons = ttk.Frame(button_frame)
+        left_buttons.pack(side="left")
+        
         ttk.Button(
-            button_frame, 
+            left_buttons, 
             text="Start Download", 
             command=self.start_download
         ).pack(side="left", padx=5)
         
         ttk.Button(
-            button_frame, 
+            left_buttons, 
             text="Stop", 
             command=self.stop_download
         ).pack(side="left", padx=5)
         
+        # Right side buttons
+        right_buttons = ttk.Frame(button_frame)
+        right_buttons.pack(side="right")
+        
         ttk.Button(
-            button_frame, 
+            right_buttons, 
             text="Help", 
             command=self.show_help
-        ).pack(side="right", padx=5)
+        ).pack(side="left", padx=5)
+        
+        ttk.Button(
+            right_buttons, 
+            text="Exit", 
+            command=self.exit_application
+        ).pack(side="left", padx=5)
 
     def create_status_frame(self):
         status_frame = ttk.LabelFrame(self, text="Status")
@@ -292,3 +306,11 @@ class MainWindow(ttk.Frame):
         self.retailer_select['values'] = retailers
         if retailers:
             self.retailer_select.set(retailers[0]) 
+
+    def exit_application(self):
+        """Exit the application, stopping any running processes"""
+        if messagebox.askokcancel("Exit", "Do you want to exit the application?"):
+            # Stop any running downloads
+            self.stop_download()
+            # Destroy the root window
+            self.root.destroy() 
