@@ -23,5 +23,33 @@ def calculate_default_dates(date):
         
         return first_day, last_day
 
+def get_week_ranges(start_date_str, end_date_str):
+        """Calculate week ranges from start to end date"""
+        # Convert string dates to datetime objects
+        start_date = datetime.strptime(start_date_str, '%m/%d/%Y')
+        end_date = datetime.strptime(end_date_str, '%m/%d/%Y')
+
+        # Calculate the first Saturday of the month
+        days_to_saturday = (5 - start_date.weekday()) % 7
+        first_saturday = start_date + timedelta(days=days_to_saturday)
+
+        week_ranges = []
+        current_start = start_date
+
+        # Generate full week ranges
+        while current_start <= end_date:
+            week_end = min(first_saturday, end_date)
+            week_ranges.append((
+                week_end.strftime('%Y%m%d'),
+                current_start.strftime('%Y-%m-%d'),
+                week_end.strftime('%Y-%m-%d')
+            ))
+            current_start = first_saturday + timedelta(days=1)
+            first_saturday += timedelta(days=7)
+            
+        return week_ranges
+
 if __name__ == "__main__":
-    print(calculate_default_dates(datetime(2024, 12, 1)))
+    first_day, last_day = calculate_default_dates(datetime(2025, 1, 1))
+    print(first_day, last_day)
+    print(get_week_ranges(first_day, last_day))
