@@ -16,34 +16,27 @@ class LiabilityProcessor(BaseProcessor):
         # Convert string dates to datetime objects
         start_date = datetime.strptime(start_date_str, '%m/%d/%Y')
         end_date = datetime.strptime(end_date_str, '%m/%d/%Y')
-        
-        # Get first Saturday after start date
+
+        # Calculate the first Saturday of the month
         days_to_saturday = (5 - start_date.weekday()) % 7
         first_saturday = start_date + timedelta(days=days_to_saturday)
-        
+
         week_ranges = []
         current_start = start_date
-        
-        # Handle first partial week if needed
-        if days_to_saturday > 0:
-            week_ranges.append((
-                current_start.strftime('%Y%m%d'),
-                current_start.strftime('%Y-%m-%d'),
-                first_saturday.strftime('%Y-%m-%d')
-            ))
-            current_start = first_saturday + timedelta(days=1)
-        
+
         # Generate full week ranges
         while current_start <= end_date:
-            week_end = min(current_start + timedelta(days=6), end_date)
+            week_end = min(first_saturday, end_date)
             week_ranges.append((
                 week_end.strftime('%Y%m%d'),
                 current_start.strftime('%Y-%m-%d'),
                 week_end.strftime('%Y-%m-%d')
             ))
-            current_start = week_end + timedelta(days=1)
+            current_start = first_saturday + timedelta(days=1)
+            first_saturday += timedelta(days=7)
             
         return week_ranges
+
         
     def process_liability_data(self):
         """Process liability data from downloaded Excel file"""
@@ -63,6 +56,9 @@ class LiabilityProcessor(BaseProcessor):
                 # Read Excel file
                 df = pd.read_excel(file_path)
                 
+                # Strip spaces from column names
+                df.columns = df.columns.str.strip()
+
                 # Sort by activated date
                 df['Activated'] = pd.to_datetime(df['Activated'], errors='coerce')
                 df = df.sort_values('Activated')
@@ -95,12 +91,26 @@ class LiabilityProcessor(BaseProcessor):
                     week_data = df[mask]
                     
                     if not week_data.empty:
-                        output_file = f"inventoryHistory_{retailer_number}_{week_end}.csv"
+                        # Transform the data
+                        week_data = week_data.copy()  # Avoid SettingWithCopyWarning
+                        week_data['Retailer ID'] = retailer_number
+                        week_data['Game'] = week_data['Game No.']
+                        week_data['Pack'] = week_data['No.']
+                        week_data['Number of Tkt'] = week_data['gross value'] / week_data['Price Point']
+                        week_data['Amount'] = week_data['gross value']
+                        week_data['Activated Date'] = week_data['Activated'].dt.date
+                        week_data['Week Ending'] = pd.to_datetime(week_end, format='%Y%m%d').date()
+                        
+                        # Select and reorder columns
+                        week_data = week_data[['Retailer ID', 'Game', 'Pack', 'Number of Tkt', 'Amount', 'Activated Date', 'Week Ending']]
+                        print(week_data.head())
+                        # Sort by Activated Date
+                        output_file = f"PACKSACTIVATED_{retailer_number}_{week_end}.csv"
                         output_path = os.path.join(self.processed_dir, output_file)
                         
                         # Save to CSV
                         week_data.to_csv(output_path, index=False)
-                        logger.info(f"Created liability CSV for week ending {week_end}")
+                        logger.info(f"Created liability (PACKSACTIVATED) CSV for week ending {week_end}")
                 
                 # Don't remove the original file
                 logger.info(f"Finished processing liability file: {file}")

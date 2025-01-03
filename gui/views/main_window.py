@@ -13,7 +13,7 @@ class MainWindow(ttk.Frame):
         self.root = parent
         
         # Initialize StringVar variables with default dates
-        default_start_date, default_end_date = self.calculate_default_dates()
+        default_start_date, default_end_date = self.calculate_default_dates(None)
         self.excel_path = tk.StringVar()
         self.download_path = tk.StringVar()
         self.start_date = tk.StringVar(value=default_start_date)
@@ -25,11 +25,11 @@ class MainWindow(ttk.Frame):
         
         self.init_ui()
 
-    def calculate_default_dates(date):
+    def calculate_default_dates(self, date=None):
         """Calculate default start and end dates.
         Start date is first of previous month.
         End date is the first Saturday after the last day of previous month."""
-        d = datetime.today() if not date else date
+        d = datetime.today() if date is None else date
 
         # Calculate the first day of the previous month
         start_date = d - relativedelta(months=1)

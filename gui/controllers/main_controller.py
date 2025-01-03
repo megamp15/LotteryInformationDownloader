@@ -160,8 +160,8 @@ class MainController:
                         extractor.extract_invoice_data()
                     if not self.stop_requested:
                         extractor.extract_liabilities_data()
-                    if not self.stop_requested:
-                        extractor.extract_reports_data()
+                    # if not self.stop_requested:
+                    #     extractor.extract_reports_data()
                     if not self.stop_requested:
                         extractor.process_downloaded_data()
                     
