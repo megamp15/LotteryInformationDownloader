@@ -41,6 +41,9 @@ class LiabilityProcessor(BaseProcessor):
     def process_liability_data(self):
         """Process liability data from downloaded Excel file"""
         try:
+            # Rename and copy files before processing
+            self.rename_and_copy_files()
+
             # Find the liability file in raw directory
             liability_files = [f for f in os.listdir(self.raw_dir) 
                              if 'Inventory_History' in f and f.endswith('.xlsx')]

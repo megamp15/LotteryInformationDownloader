@@ -14,6 +14,9 @@ class ReportProcessor(BaseProcessor):
     def process_report_data(self):
         """Process downloaded report data"""
         try:
+            # Rename and copy files before processing
+            self.rename_and_copy_files()
+
             # Process files in raw directory but don't move them
             for filename in os.listdir(self.raw_dir):
                 if filename.endswith('.csv'):

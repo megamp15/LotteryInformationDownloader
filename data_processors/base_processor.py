@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import logging
+import shutil
 from utils.file_manager import FileManager
 
 logger = logging.getLogger(__name__)
@@ -38,3 +39,19 @@ class BaseProcessor:
         elif file_path.endswith('.xlsx'):
             df.to_excel(file_path, index=False)
         logger.info(f"Saved processed data to {file_path}") 
+
+    def rename_and_copy_files(self):
+        """Rename files in the raw directory and copy them to the processed directory."""
+        for filename in os.listdir(self.raw_dir):
+            new_filename = filename
+
+            # Rename statementSummaryLsp to STATEMENTSUMMARY
+            if filename.startswith('statementSummaryLsp'):
+                new_filename = 'STATEMENTSUMMARY' + filename[len('statementSummaryLsp'):]
+
+            # Copy the renamed file to the processed directory
+            if new_filename != filename:
+                src_path = os.path.join(self.raw_dir, filename)
+                dest_path = os.path.join(self.processed_dir, new_filename)
+                shutil.copy(src_path, dest_path)
+                logger.info(f"Copied and renamed file from {filename} to {new_filename}") 
