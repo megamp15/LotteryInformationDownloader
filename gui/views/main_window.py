@@ -12,6 +12,9 @@ class MainWindow(ttk.Frame):
         self.controller = controller
         self.root = parent
         
+        # Add this line after setting controller
+        self.controller.set_view(self)
+        
         # Initialize StringVar variables with default dates
         default_start_date, default_end_date = self.calculate_default_dates(None)
         self.excel_path = tk.StringVar()
@@ -96,28 +99,59 @@ class MainWindow(ttk.Frame):
         action_frame = ttk.Frame(self)
         action_frame.pack(fill="x", padx=5, pady=5)
 
+        # First row: Download type and Delete files checkbox
+        first_row = ttk.Frame(action_frame)
+        first_row.pack(fill="x", padx=5, pady=5)
+        
+        # Download type selection
+        type_frame = ttk.Frame(first_row)
+        type_frame.pack(side="left", padx=5)
+        
+        ttk.Label(type_frame, text="Select download type:").pack(side="left", padx=5)
+        self.download_type = ttk.Combobox(
+            type_frame,
+            values=('ALL', 'SINGLE'),
+            state="readonly",
+            width=20
+        )
+        self.download_type.pack(side="left", padx=5)
+        self.download_type.bind('<<ComboboxSelected>>', self.on_download_type_change)
+
         # Delete files checkbox
         ttk.Checkbutton(
-            action_frame, 
+            first_row, 
             text="Delete all files in folder(s)", 
             variable=self.delete_files
-        ).pack(side="left", padx=5)
+        ).pack(side="left", padx=20)
 
-        # Action buttons
+        # Second row: Retailer selection (hidden by default)
+        self.retailer_frame = ttk.Frame(action_frame)
+        ttk.Label(self.retailer_frame, text="Select Retailer:").pack(side="left", padx=5)
+        self.retailer_select = ttk.Combobox(
+            self.retailer_frame,
+            state="readonly",
+            width=30
+        )
+        self.retailer_select.pack(side="left", padx=5)
+
+        # Third row: Action buttons
+        button_frame = ttk.Frame(action_frame)
+        button_frame.pack(fill="x", padx=5, pady=5)
+        
         ttk.Button(
-            action_frame, 
+            button_frame, 
             text="Start Download", 
             command=self.start_download
         ).pack(side="left", padx=5)
         
         ttk.Button(
-            action_frame, 
+            button_frame, 
             text="Stop", 
             command=self.stop_download
         ).pack(side="left", padx=5)
         
         ttk.Button(
-            action_frame, 
+            button_frame, 
             text="Help", 
             command=self.show_help
         ).pack(side="right", padx=5)
@@ -155,13 +189,18 @@ class MainWindow(ttk.Frame):
             self.controller.on_dir_selected(dirname)
 
     def start_download(self):
+        """Start the download process"""
         if self.validate_inputs():
+            download_type = self.download_type.get()
+            selected_retailer = self.retailer_select.get() if download_type == 'SINGLE' else None
+            
             self.controller.start_download(
                 self.excel_path.get(),
                 self.download_path.get(),
                 self.start_date.get(),
                 self.end_date.get(),
-                self.delete_files.get()
+                self.delete_files.get(),
+                selected_retailer
             )
 
     def stop_download(self):
@@ -189,6 +228,12 @@ class MainWindow(ttk.Frame):
             messagebox.showerror("Error", "Please select a download directory")
             return False
         if not self.validate_dates():
+            return False
+        if not self.download_type.get():
+            messagebox.showerror("Error", "Please select a download type")
+            return False
+        if self.download_type.get() == 'SINGLE' and not self.retailer_select.get():
+            messagebox.showerror("Error", "Please select a retailer")
             return False
         return True
 
@@ -224,3 +269,26 @@ class MainWindow(ttk.Frame):
                 messagebox.showinfo("Success", f"Template saved to:\n{save_path}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save template: {str(e)}") 
+
+    def on_download_type_change(self, event=None):
+        """Handle download type selection change"""
+        if self.download_type.get() == 'SINGLE':
+            if not self.excel_path.get():
+                messagebox.showwarning(
+                    "Warning",
+                    "Please select an Excel file first!"
+                )
+                self.download_type.set('')
+                return
+            
+            self.retailer_frame.pack(fill="x", padx=5, pady=5)
+            # Update retailer list from Excel file
+            self.controller.update_retailer_list(self.excel_path.get())
+        else:
+            self.retailer_frame.pack_forget()
+
+    def update_retailer_list(self, retailers):
+        """Update the retailer dropdown with new values"""
+        self.retailer_select['values'] = retailers
+        if retailers:
+            self.retailer_select.set(retailers[0]) 

@@ -27,6 +27,7 @@ class MainController:
         self.stop_requested = False
         self.gui_handler = None
         self.root = root
+        self.view = None
 
     def set_status_callback(self, callback):
         """Set up logging to GUI"""
@@ -42,6 +43,10 @@ class MainController:
         # Optionally set level to ensure we capture all messages
         root_logger.setLevel(logging.INFO)
 
+    def set_view(self, view):
+        """Set the view reference"""
+        self.view = view
+
     def on_excel_selected(self, filename):
         self.settings.excel_file = filename
         logger.info(f"Excel file selected: {filename}")
@@ -50,7 +55,7 @@ class MainController:
         self.settings.download_dir = dirname
         logger.info(f"Download directory selected: {dirname}")
 
-    def start_download(self, excel_path, download_dir, start_date, end_date, delete_files=False):
+    def start_download(self, excel_path, download_dir, start_date, end_date, delete_files=False, selected_retailer=None):
         if self.current_thread and self.current_thread.is_alive():
             logger.warning("Download already in progress")
             return
@@ -58,7 +63,7 @@ class MainController:
         self.stop_requested = False
         self.current_thread = Thread(
             target=self._download_process,
-            args=(excel_path, download_dir, start_date, end_date, delete_files)
+            args=(excel_path, download_dir, start_date, end_date, delete_files, selected_retailer)
         )
         self.current_thread.start()
 
@@ -69,55 +74,61 @@ class MainController:
     def delete_files(self, download_dir, df, single_retailer=""):
         """Delete files in retailer folders"""
         try:
+            raw_dir = os.path.join(download_dir, 'raw')
+            processed_dir = os.path.join(download_dir, 'processed')
+            
             if single_retailer:
-                # Delete files for single retailer
-                del_file_dir = os.path.join(download_dir, single_retailer.strip())
-                if os.path.exists(del_file_dir):
-                    for subdir in ['raw', 'processed']:
-                        subdir_path = os.path.join(del_file_dir, subdir)
-                        if os.path.exists(subdir_path):
-                            try:
-                                for f in os.listdir(subdir_path):
-                                    file_path = os.path.join(subdir_path, f)
-                                    try:
-                                        if os.path.isfile(file_path):
-                                            os.remove(file_path)
-                                    except Exception as e:
-                                        logger.warning(f"Could not delete file {f}: {str(e)}")
-                            except Exception as e:
-                                logger.warning(f"Could not access directory {subdir}: {str(e)}")
-                    logger.info(f"Deleted files for {single_retailer}")
-            else:
-                # Delete files for all retailers
-                for retailer in df['COMPANY']:
-                    retailer_dir = os.path.join(download_dir, retailer.strip())
+                # Delete files for single retailer in both raw and processed directories
+                for base_dir in [raw_dir, processed_dir]:
+                    retailer_dir = os.path.join(base_dir, single_retailer.strip())
                     if os.path.exists(retailer_dir):
-                        for subdir in ['raw', 'processed']:
-                            subdir_path = os.path.join(retailer_dir, subdir)
-                            if os.path.exists(subdir_path):
+                        try:
+                            for f in os.listdir(retailer_dir):
+                                file_path = os.path.join(retailer_dir, f)
                                 try:
-                                    for f in os.listdir(subdir_path):
-                                        file_path = os.path.join(subdir_path, f)
+                                    if os.path.isfile(file_path):
+                                        os.remove(file_path)
+                                except Exception as e:
+                                    logger.warning(f"Could not delete file {f}: {str(e)}")
+                        except Exception as e:
+                            logger.warning(f"Could not access directory for {single_retailer} in {base_dir}: {str(e)}")
+                logger.info(f"Deleted files for {single_retailer}")
+            else:
+                # Delete files for all retailers in both raw and processed directories
+                for base_dir in [raw_dir, processed_dir]:
+                    if os.path.exists(base_dir):
+                        for retailer in df['COMPANY']:
+                            retailer_dir = os.path.join(base_dir, retailer.strip())
+                            if os.path.exists(retailer_dir):
+                                try:
+                                    for f in os.listdir(retailer_dir):
+                                        file_path = os.path.join(retailer_dir, f)
                                         try:
                                             if os.path.isfile(file_path):
                                                 os.remove(file_path)
                                         except Exception as e:
                                             logger.warning(f"Could not delete file {f}: {str(e)}")
                                 except Exception as e:
-                                    logger.warning(f"Could not access directory {subdir}: {str(e)}")
+                                    logger.warning(f"Could not access directory for {retailer} in {base_dir}: {str(e)}")
                 logger.info("Deleted files for all retailers")
         except Exception as e:
             logger.error(f"Error in delete_files: {str(e)}")
 
-    def _download_process(self, excel_path, download_dir, start_date, end_date, delete_files=False):
+    def _download_process(self, excel_path, download_dir, start_date, end_date, delete_files=False, selected_retailer=None):
         try:
             logger.info(f"Reading Excel file: {excel_path}")
             df = pd.read_excel(excel_path)
+            
+            if selected_retailer:
+                df = df[df['COMPANY'].str.strip() == selected_retailer]
+                print(df)
+                logger.info(f"Processing single retailer: {selected_retailer}")
+            
             logger.info(f"Found {len(df)} retailers to process")
 
             # Delete existing files if requested
             if delete_files:
-                self.delete_files(download_dir, df)
+                self.delete_files(download_dir, df, selected_retailer)
 
             for index, row in df.iterrows():
                 if self.stop_requested:
@@ -196,3 +207,13 @@ class MainController:
         df = pd.DataFrame(data)
         df.to_excel(save_path, index=False)
         logger.info(f"Template Excel file created at: {save_path}")
+
+    def update_retailer_list(self, excel_path):
+        """Read Excel file and update retailer list"""
+        try:
+            df = pd.read_excel(excel_path)
+            retailers = df['COMPANY'].str.strip().tolist()
+            self.view.update_retailer_list(retailers)
+        except Exception as e:
+            logger.error(f"Error reading retailers from Excel: {str(e)}")
+            messagebox.showerror("Error", "Failed to read retailers from Excel file")
