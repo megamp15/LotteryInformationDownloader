@@ -30,13 +30,13 @@ class WebDriverSetup:
         
         # Configure download preferences based on mode
         if mode == '--script':
-            # Create downloads/COMPANY_NAME/raw folder if it doesn't exist
-            company_download_path = os.path.join('downloads', company_name, 'raw')
+            # Create downloads/raw/COMPANY_NAME folder if it doesn't exist
+            company_download_path = os.path.join('downloads', 'raw', company_name)
             os.makedirs(company_download_path, exist_ok=True)
             download_dir = os.path.abspath(company_download_path)
         else:  # GUI mode
-            # Create COMPANY_NAME/raw folder in user-selected directory
-            company_download_path = os.path.join(download_path, company_name, 'raw') if company_name else download_path
+            # Create raw/COMPANY_NAME folder in user-selected directory
+            company_download_path = os.path.join(download_path, 'raw', company_name) if company_name else download_path
             os.makedirs(company_download_path, exist_ok=True)
             download_dir = os.path.abspath(company_download_path)
             
