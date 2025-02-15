@@ -63,7 +63,7 @@ class LiabilityProcessor(BaseProcessor):
                 df.columns = df.columns.str.strip()
 
                 # Sort by activated date
-                df['Activated'] = pd.to_datetime(df['Activated'], errors='coerce')
+                df['Activated'] = pd.to_datetime(df['Activated'], errors='coerce').dt.date
                 df = df.sort_values('Activated')
                 
                 # Remove rows without activated date
@@ -89,8 +89,11 @@ class LiabilityProcessor(BaseProcessor):
 
                 # Create separate CSV for each week range
                 for week_end, start_date, end_date in week_ranges:
-                    # Filter data for this week
-                    mask = (df['Activated'] >= start_date) & (df['Activated'] <= end_date)
+                    # Convert string dates to datetime for proper comparison
+                    start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+                    end_dt = datetime.strptime(end_date, '%Y-%m-%d').date() + timedelta(days=1)
+                    # Filter data for this week - now includes the full end date
+                    mask = (df['Activated'] >= start_dt) & (df['Activated'] < end_dt)
                     week_data = df[mask]
                     
                     if not week_data.empty:
@@ -106,7 +109,6 @@ class LiabilityProcessor(BaseProcessor):
                         
                         # Select and reorder columns
                         week_data = week_data[['Retailer ID', 'Game', 'Pack', 'Number of Tkt', 'Amount', 'Activated Date', 'Week Ending']]
-                        print(week_data.head())
                         # Sort by Activated Date
                         output_file = f"PACKSACTIVATED_{retailer_number}_{week_end}.csv"
                         output_path = os.path.join(self.processed_dir, output_file)

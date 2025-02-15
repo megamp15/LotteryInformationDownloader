@@ -50,6 +50,6 @@ def get_week_ranges(start_date_str, end_date_str):
         return week_ranges
 
 if __name__ == "__main__":
-    first_day, last_day = calculate_default_dates(datetime(2025, 1, 1))
+    first_day, last_day = calculate_default_dates(datetime(2025, 2, 1))
     print(first_day, last_day)
     print(get_week_ranges(first_day, last_day))
