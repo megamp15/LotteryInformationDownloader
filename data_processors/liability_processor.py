@@ -101,8 +101,8 @@ class LiabilityProcessor(BaseProcessor):
                         week_data['Pack'] = week_data['No.']
                         week_data['Number of Tkt'] = week_data['gross value'] / week_data['Price Point']
                         week_data['Amount'] = week_data['gross value']
-                        week_data['Activated Date'] = week_data['Activated'].dt.date
-                        week_data['Week Ending'] = pd.to_datetime(week_end, format='%Y%m%d').date()
+                        week_data['Activated Date'] = pd.to_datetime(week_data['Activated'], format='%m/%d/%Y').dt.strftime('%m/%d/%Y')
+                        week_data['Week Ending'] = pd.to_datetime(week_end, format='%Y%m%d').date().strftime('%m/%d/%Y')
                         
                         # Select and reorder columns
                         week_data = week_data[['Retailer ID', 'Game', 'Pack', 'Number of Tkt', 'Amount', 'Activated Date', 'Week Ending']]
