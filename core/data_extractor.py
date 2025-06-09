@@ -60,10 +60,7 @@ class DataExtractor:
         """Process data for all retailers"""
         logger.info("Starting to process all retailers")
         
-        # Login only once
-        self.login_page.navigate_to()
-        self.login_page.login(LOGIN_EMAIL, LOGIN_PASSWORD)
-        
+        # Login is now handled before calling this method
         logger.info(f"Processing retailer {self.retailer_number} for {self.company_name}")
         
         # Select the retailer
