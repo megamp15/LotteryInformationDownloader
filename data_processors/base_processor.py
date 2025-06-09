@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import logging
 import shutil
+import re
+from datetime import datetime
 from utils.file_manager import FileManager
 
 logger = logging.getLogger(__name__)
@@ -48,9 +50,40 @@ class BaseProcessor:
             if filename.startswith('statementSummaryLsp'):
                 new_filename = 'STATEMENTSUMMARY' + filename[len('statementSummaryLsp'):]
 
+            # Rename pack_inventory files: 148616_Pack_Inventory_5-10-2025.csv -> PACK_INVENTORY_148616_20250510.csv
+            elif 'Pack_Inventory' in filename:
+                # Extract retailer number, date and extension
+                match = re.match(r'(\d+)_Pack_Inventory_(\d+)-(\d+)-(\d+)\.(.+)', filename)
+                if match:
+                    retailer_num = match.group(1)
+                    month = match.group(2).zfill(2)
+                    day = match.group(3).zfill(2)
+                    year = match.group(4)
+                    extension = match.group(5)
+                    new_filename = f'PACKINVENTORY_{retailer_num}_{year}{month}{day}.{extension}'
+
+            # Rename packs_activated files: similar pattern to pack_inventory
+            elif 'Packs_Activated' in filename or 'packs_activated' in filename.lower():
+                # Handle both possible formats
+                pattern = r'(\d+)_[Pp]acks_[Aa]ctivated_(\d+)-(\d+)-(\d+)\.(.+)'
+                match = re.match(pattern, filename)
+                if match:
+                    retailer_num = match.group(1)
+                    month = match.group(2).zfill(2)
+                    day = match.group(3).zfill(2)
+                    year = match.group(4)
+                    extension = match.group(5)
+                    new_filename = f'PACKSACTIVATED_{retailer_num}_{year}{month}{day}.{extension}'
+
             # Copy the renamed file to the processed directory
             if new_filename != filename:
                 src_path = os.path.join(self.raw_dir, filename)
                 dest_path = os.path.join(self.processed_dir, new_filename)
                 shutil.copy(src_path, dest_path)
-                logger.info(f"Copied and renamed file from {filename} to {new_filename}") 
+                logger.info(f"Copied and renamed file from {filename} to {new_filename}")
+            else:
+                # Copy file without renaming if no renaming rule applied
+                src_path = os.path.join(self.raw_dir, filename)
+                dest_path = os.path.join(self.processed_dir, filename)
+                shutil.copy(src_path, dest_path)
+                logger.info(f"Copied file {filename} to processed directory") 

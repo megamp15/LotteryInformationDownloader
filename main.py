@@ -37,10 +37,24 @@ def run_script_mode():
                 retailer["company_name"]
             )
             
-            # Process retailer
-            extractor.process_all_retailers()
-            extractor.process_downloaded_data()
+            # Navigate to login page
+            logger.info(f"Navigating to login page for {retailer['company_name']}")
+            extractor.login_page.navigate_to()
             
+            # Attempt login
+            logger.info(f"Attempting login for {retailer['company_name']}")
+            login_success = extractor.login_page.login(LOGIN_EMAIL, LOGIN_PASSWORD)
+            
+            if not login_success:
+                logger.error(f"Login failed for {retailer['company_name']} - skipping to next retailer")
+                continue
+            
+            # Process retailer if login successful
+            extractor.process_all_retailers()
+            
+        except Exception as e:
+            logger.error(f"Error processing {retailer['company_name']}: {str(e)} - skipping to next retailer")
+            continue
         finally:
             driver.quit()
 
