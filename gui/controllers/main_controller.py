@@ -141,6 +141,7 @@ class MainController:
 
                 logger.info(f"\nProcessing retailer: {company_name}")
                 
+                driver = None
                 try:
                     driver, wait = WebDriverSetup.get_driver(
                         mode='--gui',
@@ -160,8 +161,24 @@ class MainController:
                     logger.info(f"Navigating to Lottery Website")
                     extractor.login_page.navigate_to()
                     time.sleep(2)
+                    
+                    # Attempt login
                     logger.info(f"Logging in to Lottery Website")
-                    extractor.login_page.login(username, row['PASSWORD'].strip())
+                    login_success = extractor.login_page.login(username, row['PASSWORD'].strip())
+                    
+                    if not login_success:
+                        logger.error(f"Login failed for {company_name} ({username})")
+                        
+                        # Handle login failure based on mode
+                        if selected_retailer:
+                            # SINGLE mode - end the process
+                            logger.error("Login failed in SINGLE mode - ending process")
+                            return
+                        else:
+                            # ALL mode - skip to next retailer
+                            logger.info("Login failed in ALL mode - skipping to next retailer")
+                            continue
+                    
                     time.sleep(2)
                     logger.info(f"Selecting retailer {retailer_number}")
                     extractor.side_menu.select_retailer(retailer_number)
@@ -169,10 +186,10 @@ class MainController:
                     
                     if not self.stop_requested:
                         extractor.extract_invoice_data()
-                    if not self.stop_requested:
-                        extractor.extract_liabilities_data()
                     # if not self.stop_requested:
-                    #     extractor.extract_reports_data()
+                    #     extractor.extract_liabilities_data()
+                    if not self.stop_requested:
+                        extractor.extract_reports_data()
                     if not self.stop_requested:
                         extractor.process_downloaded_data()
                     
@@ -181,9 +198,16 @@ class MainController:
                     
                 except Exception as e:
                     logger.error(f"Error processing {company_name}: {str(e)}")
-                    continue
+                    if selected_retailer:
+                        # SINGLE mode - end on any error
+                        logger.error("Error in SINGLE mode - ending process")
+                        return
+                    else:
+                        # ALL mode - continue to next retailer
+                        continue
                 finally:
-                    driver.quit()
+                    if driver:
+                        driver.quit()
                     time.sleep(2)
                     
             if not self.stop_requested:

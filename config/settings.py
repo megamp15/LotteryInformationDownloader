@@ -3,7 +3,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(override=True)
 
 # Base URLs
 BASE_URL = os.getenv('BASE_URL', 'https://txs.lotteryservices.com/RetailerWizard/#')
@@ -40,5 +40,4 @@ DEFAULT_END_DATE = os.getenv('DEFAULT_END_DATE')
 REPORT_TYPES = {
     "PACK_INVENTORY": "Pack Inventory",
     "PACKS_ACTIVATED": "Packs Activated",
-    "FULL_STATEMENT": "Full Statement"
 } 

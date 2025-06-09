@@ -71,9 +71,9 @@ class DataExtractor:
         time.sleep(1)  # Wait for retailer selection to take effect
         
         # # Extract data for this retailer
-        self.extract_invoice_data()
-        self.extract_liabilities_data()
-        self.extract_reports_data()
+        # self.extract_invoice_data()
+        # self.extract_liabilities_data()
+        # self.extract_reports_data()
         self.process_downloaded_data()
 
     def extract_invoice_data(self):
@@ -83,27 +83,27 @@ class DataExtractor:
         self.invoice_details.set_date_range(self.start_date, self.end_date)
         self.invoice_details.download_invoices()
 
-    def extract_liabilities_data(self):
-        """Extract liabilities related data"""
-        try:
-            logger.info("Extracting liabilities data...")
+    # def extract_liabilities_data(self):
+    #     """Extract liabilities related data"""
+    #     try:
+    #         logger.info("Extracting liabilities data...")
             
-            # Get current retailer info if not set (GUI mode)
-            if not self.company_name:
-                current_retailer = self.side_menu.get_current_retailer()
-                if current_retailer:
-                    self.company_name = current_retailer
-                else:
-                    logger.error("No retailer selected")
-                    return
+    #         # Get current retailer info if not set (GUI mode)
+    #         if not self.company_name:
+    #             current_retailer = self.side_menu.get_current_retailer()
+    #             if current_retailer:
+    #                 self.company_name = current_retailer
+    #             else:
+    #                 logger.error("No retailer selected")
+    #                 return
             
-            self.side_menu.navigate_to_scratch_dashboard()
-            self.scratch_dashboard.click_liabilities_details()
-            self.liabilities_details.set_date_range(self.start_date, self.end_date)
-            self.liabilities_details.download_xlsx()
+    #         self.side_menu.navigate_to_scratch_dashboard()
+    #         self.scratch_dashboard.click_liabilities_details()
+    #         self.liabilities_details.set_date_range(self.start_date, self.end_date)
+    #         self.liabilities_details.download_xlsx()
             
-        except Exception as e:
-            logger.error(f"Error extracting liabilities data: {str(e)}")
+    #     except Exception as e:
+    #         logger.error(f"Error extracting liabilities data: {str(e)}")
 
     def extract_reports_data(self):
         """Extract reports data"""
@@ -139,9 +139,9 @@ class DataExtractor:
 
             logger.info(f"Processing data for company: {self.company_name}")
                 
-            # Process liability data first
-            liability_processor = LiabilityProcessor(self.download_path, self.company_name, self.start_date, self.end_date)
-            liability_processor.process_liability_data()
+            # # Process liability data first
+            # liability_processor = LiabilityProcessor(self.download_path, self.company_name, self.start_date, self.end_date)
+            # liability_processor.process_liability_data()
             
             # Then process any remaining reports
             report_processor = ReportProcessor(self.download_path, self.company_name, self.start_date, self.end_date)
